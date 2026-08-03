@@ -1,6 +1,7 @@
 // ======== State ========
 let P='',O='',R='',B='master',PP='content/posts';
 let posts=[],imgs=[],curP=null,cv='dashboard';
+const CDN='https://cdn.jsdelivr.net/gh/q3190872366/amigo-blog@master';
 const I=(id)=>document.getElementById(id);
 const T=(m,t)=>{const e=I('toast');e.textContent=m;e.className=t;clearTimeout(e._t);e._t=setTimeout(()=>e.className='',2500)};
 
@@ -99,7 +100,7 @@ function renderPosts(){
   const fl=posts.filter(p=>{if(q&&!p.title.toLowerCase().includes(q)&&!p.slug.toLowerCase().includes(q))return 0;if(f==='draft'&&!p.draft)return 0;if(f==='pub'&&p.draft)return 0;return 1});
   I('p-list').innerHTML=fl.length?fl.map(p=>'<div class="pitem" onclick="editP(\''+p.slug+'\')"><div><div class="title">'+esc(p.title)+'</div><div class="meta">'+(p.date?p.date.slice(0,10):'')+(p.cats.length?' · '+p.cats.join(', '):'')+(p.tags.length?' · '+p.tags.join(', '):'')+'</div></div><span class="badge '+(p.draft?'draft':'pub')+'">'+(p.draft?'草稿':'已发布')+'</span></div>').join(''):'<div class="empty">没有文章</div>';
 }
-function newPost(){curP=null;I('editor').value='';I('em-t').value='新文章';I('em-fm').value='title: "新文章"\ndate: '+new Date().toISOString()+'\ndraft: true\nauthor: ""\nsummary: ""\ncover: ""\ncomments: true\ncategories: []\ntags: []';I('preview').innerHTML='';go('editor');swPane('edit');upCnt()}
+function newPost(){curP=null;I('editor').value='';I('em-t').value='新文章';I('em-fm').value='title: "新文章"\ndate: '+new Date().toISOString()+'\ndraft: true\nauthor: ""\nsummary: ""\ncover: ""\ncomments: true\ncategories: []\ntags: []';I('preview').innerHTML='';go('editor');swPane('edit');upPrev();upCnt()}
 function editP(slug){const p=posts.find(x=>x.slug===slug);if(!p)return;curP=p;const m=p.raw.match(/^---\n([\s\S]*?)\n---/);I('editor').value=m?p.raw.replace(/^---\n[\s\S]*?\n---\n/,''):p.raw;I('em-t').value=p.title||'';I('em-fm').value=m?m[1].trim():'';go('editor');swPane('edit');upPrev();upCnt()}
 async function upPrev(){await needM();I('preview').innerHTML=marked.parse(I('editor').value||'');if(typeof upCnt==='function')upCnt()}
 function bFM(){const fm=I('em-fm').value.trim();if(!fm)return'---\n---\n\n';return '---\n'+fm+'\n---\n'}
@@ -111,8 +112,8 @@ function doFmt(t){const e=I('editor'),s=e.selectionStart,ed=e.selectionEnd,sel=e
 function upCnt(){const t=I('editor').value,c=t.replace(/\s+/g,'').length,w=Math.max(1,Math.ceil(c/400));I('st-cnt').textContent=c+' 字';I('st-time').textContent='≈'+w+' 分钟'}
 
 // ======== Editor mode / pane ========
-function setMode(m){const body=I('ed-body');if(m==='split'){body.style.gridTemplateColumns='1fr 1fr';body.style.display='grid';I('editor').parentElement.parentElement.style.display='flex';I('preview').parentElement.style.display='flex'}else if(m==='edit'){body.style.gridTemplateColumns='1fr';body.style.display='grid';I('editor').parentElement.parentElement.style.display='flex';I('preview').parentElement.style.display='none'}else if(m==='preview'){body.style.gridTemplateColumns='1fr';body.style.display='grid';I('editor').parentElement.parentElement.style.display='none';I('preview').parentElement.style.display='flex'}if(window.innerWidth<900){if(m==='split')swPane('edit');else swPane(m)}}
-function swPane(p){document.querySelectorAll('.ed-tab').forEach(x=>x.classList.toggle('on',x.dataset.pane===p));document.querySelectorAll('.ed-pane').forEach(x=>x.classList.toggle('on',x.classList.contains('ed-'+p)))}
+function setMode(m){const body=I('ed-body');if(m==='split'){body.style.gridTemplateColumns='1fr 1fr';body.style.display='grid'}else if(m==='edit'||m==='preview'){body.style.gridTemplateColumns='1fr';body.style.display='grid'}if(window.innerWidth<900){if(m==='split')swPane('edit');else swPane(m)}}
+function swPane(p){document.querySelectorAll('.ed-tab').forEach(x=>x.classList.toggle('on',x.dataset.pane===p));document.querySelectorAll('.ed-pane').forEach(x=>x.classList.toggle('on',x.classList.contains('ed-'+p)));if(p==='preview')upPrev()}
 
 // ======== Front matter modal ========
 function openFm(){I('ed-fm').classList.add('on');I('em-fm').focus()}
@@ -167,8 +168,12 @@ function filterMgr(){
   empty.style.display='none';
   grid.innerHTML=fl.map(x=>'<div class="img-card" onclick="insImgToEd(\''+x.name+'\',\''+x.slug+'\')" title="'+esc(x.name)+'"><img src="'+x.url+'" alt="'+esc(x.name)+'" loading="lazy"><div class="img-info">'+esc(x.name.slice(0,16))+(x.name.length>16?'...':'')+'</div></div>').join('');
 }
+function imgCdnUrl(name,slug){
+  if(slug==='公共'||!slug)return CDN+'/static/posts/images/'+name;
+  return CDN+'/content/posts/'+slug+'/'+name;
+}
 function insImgToEd(name,slug){
-  const ref=(slug==='公共')?'static/posts/images/'+name:(!curP?'/static/posts/images/'+name:name);
+  const ref=imgCdnUrl(name,(slug==='公共'||!curP)?'公共':curP.slug);
   insAt('!['+name.replace(/\.[^.]+$/,'')+']('+ref+')');
   upPrev();upCnt();
   closeImgMgr();
@@ -211,7 +216,7 @@ async function upMany(files,fw){
     const content=await new Promise((ok,no)=>{r.onload=()=>ok(r.result.split(',')[1]);r.onerror=no;r.readAsDataURL(blob)});
     const path=dir+'/'+bn;
     await gh('/contents/'+ghp(path),{method:'PUT',body:JSON.stringify({message:'admin: upload '+bn,content,branch:B})});
-    if(curP){insAt('!['+bn+']('+bn+')');upPrev()}
+    if(curP){insAt('!['+bn+']('+imgCdnUrl(bn,curP.slug)+')');upPrev()}
     T('已上传 '+bn,'ok');
   }catch(e){T('上传失败: '+e.message,'err')}}
   if(cv==='media')loadImgs();
@@ -226,7 +231,7 @@ async function loadImgs(){I('i-grid').innerHTML='<div class="empty">扫描中...
     renderImgs();
   }catch(e){I('i-grid').innerHTML='<div class="empty">加载失败: '+e.message+'</div>'}
 }
-function renderImgs(){I('i-grid').innerHTML=imgs.length?imgs.map(x=>'<div class="img-card"><img src="'+x.url+'" alt="'+esc(x.name)+'" loading="lazy"><div class="img-acts"><button onclick="cpy(\''+x.url+'\')">复制</button><button onclick="delI(\''+x.path+'\',\''+x.sha+'\')">删除</button></div><div class="img-info"><span>'+esc(x.name)+'</span><span>'+esc(x.slug)+'</span></div></div>').join(''):'<div class="empty">还没有图片</div>'}
+function renderImgs(){I('i-grid').innerHTML=imgs.length?imgs.map(x=>{const u=imgCdnUrl(x.name,x.slug);return '<div class="img-card"><img src="'+x.url+'" alt="'+esc(x.name)+'" loading="lazy"><div class="img-acts"><button onclick="cpy(\''+u+'\')">复制</button><button onclick="delI(\''+x.path+'\',\''+x.sha+'\')">删除</button></div><div class="img-info"><span>'+esc(x.name)+'</span><span>'+esc(x.slug)+'</span></div></div>'}).join(''):'<div class="empty">还没有图片</div>'}
 function cpy(u){navigator.clipboard.writeText(u);T('已复制','ok')}
 async function delI(p,sha){if(!confirm('删除？'))return;try{await gh('/contents/'+ghp(p),{method:'DELETE',body:JSON.stringify({message:'admin: delete image',sha,branch:B})});T('已删除','ok');loadImgs()}catch(e){T('删除失败: '+e.message,'err')}}
 

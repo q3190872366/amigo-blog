@@ -95,7 +95,7 @@ input,textarea,select,button{font-family:inherit;font-size:13px;outline:none}
 .ed-body{flex:1;display:grid;grid-template-columns:1fr 1fr;background:var(--e);overflow:hidden}
 .ed-pane{background:var(--card);overflow-y:auto;display:flex;flex-direction:column}
 .ed-edit{grid-column:1}
-.ed-prev{grid-column:2}
+.ed-preview{grid-column:2}
 .ed-wrap{flex:1;display:flex}
 .ed-wrap textarea{flex:1;border:none;resize:none;padding:18px 20px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:13px;line-height:1.75;background:var(--card);color:var(--t);outline:none;tab-size:2}
 #preview{padding:18px 24px;overflow-y:auto;line-height:1.8;font-size:14px;max-width:760px}
