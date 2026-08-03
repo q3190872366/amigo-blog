@@ -1,6 +1,6 @@
 baseURL = '/'
 languageCode = 'zh-cn'
-title = '我的博客'
+title = 'SLHCY'
 theme = 'Amigo'
 uglyURLs = true
 
