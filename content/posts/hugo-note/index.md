@@ -1,10 +1,15 @@
 ---
 title: "用 Hugo + Amigo 搭了个静态博客"
-date: 2026-02-20T20:00:00+08:00
-author: "博主"
-location: "家里"
+date: "2026-02-20T20:00:00+08:00"
+draft: false
+author: ''
+summary: ''
+cover: ''
+comments: true
+categories: []
+tags: []
 ---
-
+啊
 折腾了一下，用 Hugo 把博客搭起来了，主题选了 Amigo，还原了朋友圈的感觉。
 
 几个优点：
