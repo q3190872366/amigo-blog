@@ -2,6 +2,7 @@
 let P='',O='',R='',B='master',PP='content/posts';
 let posts=[],imgs=[],curP=null,cv='dashboard';
 const CDN='https://cdn.jsdelivr.net/gh/q3190872366/amigo-blog@master';
+const LOCAL=(location.port==='8787')||new URLSearchParams(location.search).get('local')==='1';
 const I=(id)=>document.getElementById(id);
 const T=(m,t)=>{const e=I('toast');e.textContent=m;e.className=t;clearTimeout(e._t);e._t=setTimeout(()=>e.className='',2500)};
 
@@ -14,7 +15,8 @@ init();
 
 function doLogin(){
   P=I('li-token').value.trim();O=I('li-owner').value.trim();R=I('li-repo').value.trim();
-  if(!P||!O||!R){T('请填写完整','err');return}
+  if(!LOCAL&&(!P||!O||!R)){T('请填写完整','err');return}
+  if(LOCAL){O=O||'local';R=R||'local'}
   localStorage.setItem('blog_adm3',JSON.stringify({pat:P,owner:O,repo:R,branch:B,path:PP}));
   I('login').style.display='none';I('app').classList.add('open');
   loadDash();
@@ -22,7 +24,21 @@ function doLogin(){
 function doLogout(){localStorage.removeItem('blog_adm3');location.reload()}
 
 // ======== GitHub API ========
-function gh(p,o={}){return fetch('https://api.github.com/repos/'+O+'/'+R+p,{...o,headers:{Authorization:'token '+P,Accept:'application/vnd.github+json','Content-Type':'application/json',...(o.headers||{})}}).then(async r=>{const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.message||'HTTP '+r.status);return d})}
+function gh(p,o={}){
+  if(LOCAL)return localApi(p,o);
+  return fetch('https://api.github.com/repos/'+O+'/'+R+p,{...o,headers:{Authorization:'token '+P,Accept:'application/vnd.github+json','Content-Type':'application/json',...(o.headers||{})}}).then(async r=>{const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.message||'HTTP '+r.status);return d})
+}
+// 本地模式：把 GitHub Contents API 请求路由到本地服务 /api/contents
+async function localApi(p,o={}){
+  const rest=p.replace(/^\/contents/,'');
+  const url='/api/contents'+rest;
+  const opt={method:o.method||'GET',headers:{}};
+  if(o.body)opt.body=o.body;
+  const r=await fetch(url,opt);
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(d.message||('HTTP '+r.status));
+  return d;
+}
 function ghp(p){return p.split('/').map(encodeURIComponent).join('/')}
 function b64d(r){try{const b=Uint8Array.from(atob(r.replace(/\n/g,'')),c=>c.charCodeAt(0));return new TextDecoder('utf-8').decode(b)}catch(_){return atob(r.replace(/\n/g,''))}}
 function b64e(s){const b=new TextEncoder().encode(s);let r='';for(const x of b)r+=String.fromCharCode(x);return btoa(r)}
@@ -100,11 +116,15 @@ function renderPosts(){
   const fl=posts.filter(p=>{if(q&&!p.title.toLowerCase().includes(q)&&!p.slug.toLowerCase().includes(q))return 0;if(f==='draft'&&!p.draft)return 0;if(f==='pub'&&p.draft)return 0;return 1});
   I('p-list').innerHTML=fl.length?fl.map(p=>'<div class="pitem" onclick="editP(\''+p.slug+'\')"><div><div class="title">'+esc(p.title)+'</div><div class="meta">'+(p.date?p.date.slice(0,10):'')+(p.cats.length?' · '+p.cats.join(', '):'')+(p.tags.length?' · '+p.tags.join(', '):'')+'</div></div><span class="badge '+(p.draft?'draft':'pub')+'">'+(p.draft?'草稿':'已发布')+'</span></div>').join(''):'<div class="empty">没有文章</div>';
 }
-function newPost(){curP=null;I('editor').value='';I('em-t').value='新文章';I('em-fm').value='title: "新文章"\ndate: '+new Date().toISOString()+'\ndraft: true\nauthor: ""\nsummary: ""\ncover: ""\ncomments: true\ncategories: []\ntags: []';I('preview').innerHTML='';go('editor');swPane('edit');upPrev();upCnt()}
-function editP(slug){const p=posts.find(x=>x.slug===slug);if(!p)return;curP=p;const m=p.raw.match(/^---\n([\s\S]*?)\n---/);I('editor').value=m?p.raw.replace(/^---\n[\s\S]*?\n---\n/,''):p.raw;I('em-t').value=p.title||'';I('em-fm').value=m?m[1].trim():'';go('editor');swPane('edit');upPrev();upCnt()}
-async function upPrev(){await needM();I('preview').innerHTML=marked.parse(I('editor').value||'');if(typeof upCnt==='function')upCnt()}
+function fmDefault(){const n=new Date();return {title:'新文章',slug:'',date:n.toISOString().slice(0,10),draft:true,author:'',summary:'',cover:'',comments:true,categories:[],tags:[]}}
+function fillFmForm(fm){I('em-t').value=fm.title||'';I('em-slug').value=fm.slug||'';I('em-date').value=(fm.date||'').slice(0,10);I('em-author').value=fm.author||'';I('em-cats').value=Array.isArray(fm.categories)?fm.categories.join(','):(fm.categories||'');I('em-tags').value=Array.isArray(fm.tags)?fm.tags.join(','):(fm.tags||'');I('em-summary').value=fm.summary||'';I('em-sub').textContent=fm.title||'新文章';updateFolder()}
+function updateFolder(){const slug=(I('em-slug').value||'').trim()||(I('em-t').value||'新文章').replace(/[^\w一-龥]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase();const d=(I('em-date').value||new Date().toISOString().slice(0,10));I('em-folder').textContent=d+'-'+slug}
+function syncFm(){updateFolder();const fm=[];const t=I('em-t').value.trim();if(t)fm.push('title: "'+t.replace(/"/g,'\\"')+'"');const s=I('em-slug').value.trim();if(s)fm.push('slug: "'+s+'"');const d=I('em-date').value;if(d)fm.push('date: '+d+'T00:00:00+08:00');const a=I('em-author').value.trim();if(a)fm.push('author: "'+a+'"');const sm=I('em-summary').value.trim();if(sm)fm.push('summary: "'+sm.replace(/"/g,'\\"')+'"');const c=I('em-cats').value.split(',').map(x=>x.trim()).filter(Boolean);if(c.length)fm.push('categories: ['+c.map(x=>'"'+x+'"').join(', ')+']');const tg=I('em-tags').value.split(',').map(x=>x.trim()).filter(Boolean);if(tg.length)fm.push('tags: ['+tg.map(x=>'"'+x+'"').join(', ')+']');fm.push('draft: true');fm.push('comments: true');I('em-fm').value=fm.join('\n');I('em-sub').textContent=t||'新文章'}
+function newPost(){curP=null;I('editor').value='';fillFmForm(fmDefault());syncFm();I('preview').innerHTML='';go('editor');swPane('edit');upPrev();upCnt()}
+function editP(slug){const p=posts.find(x=>x.slug===slug);if(!p)return;curP=p;const m=p.raw.match(/^---\n([\s\S]*?)\n---/);I('editor').value=m?p.raw.replace(/^---\n[\s\S]*?\n---\n/,''):p.raw;const fm=m?parseFM(p.raw):{};fillFmForm(fm);syncFm();go('editor');swPane('edit');upPrev();upCnt()}
+async function upPrev(){await needM();let html=marked.parse(I('editor').value||'');if(LOCAL){html=html.replace(/<img([^>]*)src="([^"]+)"([^>]*)>/g,(w,a,src,c)=>{if(/^(https?:)?\/\//.test(src)||src.startsWith('/'))return w;const fb=curP?'/static/posts/images/'+src:'';const base=curP?'/api/raw/content/posts/'+curP.slug+'/'+src:'/static/posts/images/'+src;return fb?'<img'+a+'src="'+base+'" data-fb="'+fb+'" onerror="if(this.dataset.fb&&!this.dataset.t){this.dataset.t=1;this.src=this.dataset.fb}"'+c+'>':'<img'+a+'src="'+base+'"'+c+'>'});}I('preview').innerHTML=html;if(typeof upCnt==='function')upCnt()}
 function bFM(){const fm=I('em-fm').value.trim();if(!fm)return'---\n---\n\n';return '---\n'+fm+'\n---\n'}
-async function save(pub){const body=I('editor').value,t=I('em-t').value||'未命名',isNew=!curP;if(pub){I('em-fm').value=I('em-fm').value.replace(/draft:\s*\w+/,'draft: false')}const all=bFM()+body;try{let slug,path,sha=null;if(isNew){const n=new Date();slug=n.toISOString().slice(0,10)+'-'+n.toISOString().slice(11,19).replace(/:/g,'');path=PP+'/'+slug+'/index.md'}else{slug=curP.slug;path=PP+'/'+slug+'/index.md';sha=curP.sha}const pb={message:'admin: '+(pub?'publish':'update')+' '+t,content:b64e(all),branch:B};if(sha)pb.sha=sha;await gh('/contents/'+ghp(path),{method:'PUT',body:JSON.stringify(pb)});T(pub?'已发布':'已保存','ok');await loadPosts();const i=posts.findIndex(p=>p.slug===slug);if(i>=0)curP=posts[i];if(pub)setTimeout(()=>doDeploy(),500)}catch(e){T('保存失败: '+e.message,'err')}}
+async function save(pub){syncFm();const body=I('editor').value,t=I('em-t').value.trim()||'未命名',isNew=!curP;if(pub){I('em-fm').value=I('em-fm').value.replace(/draft:\s*\w+/,'draft: false')}const all=bFM()+body;try{let slug,path,sha=null;const userSlug=(I('em-slug').value||'').trim();if(isNew){const d=(I('em-date').value||new Date().toISOString().slice(0,10));const s=userSlug||(t.replace(/[^\w一-龥]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase().slice(0,40)||'post');slug=d+'-'+s;path=PP+'/'+slug+'/index.md'}else{slug=curP.slug;path=PP+'/'+slug+'/index.md';sha=curP.sha}const pb={message:'admin: '+(pub?'publish':'update')+' '+t,content:b64e(all),branch:B};if(sha)pb.sha=sha;await gh('/contents/'+ghp(path),{method:'PUT',body:JSON.stringify(pb)});T(pub?'已发布':'已保存','ok');await loadPosts();const i=posts.findIndex(p=>p.slug===slug);if(i>=0)curP=posts[i];if(pub)setTimeout(()=>doDeploy(),500)}catch(e){T('保存失败: '+e.message,'err')}}
 async function del(){if(!curP)return;if(!confirm('确定删除「'+curP.title+'」？'))return;try{const dir=await gh('/contents/'+PP+'/'+curP.slug);for(const f of dir)if(f.sha)await gh('/contents/'+ghp(f.path),{method:'DELETE',body:JSON.stringify({message:'admin: delete '+f.name,sha:f.sha,branch:B})});T('已删除','ok');loadPosts();go('posts')}catch(e){T('删除失败: '+e.message,'err')}}
 
 // ======== Editor fmt ========
@@ -172,8 +192,16 @@ function imgCdnUrl(name,slug){
   if(slug==='公共'||!slug)return CDN+'/static/posts/images/'+name;
   return CDN+'/content/posts/'+slug+'/'+name;
 }
+// 本地模式返回本地可访问路径（公共图走 /static，文章图走相对名由预览改写）
+function imgRef(name,slug){
+  if(LOCAL){
+    if(slug==='公共'||!slug)return '/static/posts/images/'+name;
+    return name;
+  }
+  return imgCdnUrl(name,slug);
+}
 function insImgToEd(name,slug){
-  const ref=imgCdnUrl(name,(slug==='公共'||!curP)?'公共':curP.slug);
+  const ref=imgRef(name,(slug==='公共'||!curP)?'公共':curP.slug);
   insAt('!['+name.replace(/\.[^.]+$/,'')+']('+ref+')');
   upPrev();upCnt();
   closeImgMgr();
@@ -216,7 +244,7 @@ async function upMany(files,fw){
     const content=await new Promise((ok,no)=>{r.onload=()=>ok(r.result.split(',')[1]);r.onerror=no;r.readAsDataURL(blob)});
     const path=dir+'/'+bn;
     await gh('/contents/'+ghp(path),{method:'PUT',body:JSON.stringify({message:'admin: upload '+bn,content,branch:B})});
-    if(curP){insAt('!['+bn+']('+imgCdnUrl(bn,curP.slug)+')');upPrev()}
+    if(curP){insAt('!['+bn+']('+imgRef(bn,curP.slug)+')');upPrev()}
     T('已上传 '+bn,'ok');
   }catch(e){T('上传失败: '+e.message,'err')}}
   if(cv==='media')loadImgs();
@@ -231,7 +259,7 @@ async function loadImgs(){I('i-grid').innerHTML='<div class="empty">扫描中...
     renderImgs();
   }catch(e){I('i-grid').innerHTML='<div class="empty">加载失败: '+e.message+'</div>'}
 }
-function renderImgs(){I('i-grid').innerHTML=imgs.length?imgs.map(x=>{const u=imgCdnUrl(x.name,x.slug);return '<div class="img-card"><img src="'+x.url+'" alt="'+esc(x.name)+'" loading="lazy"><div class="img-acts"><button onclick="cpy(\''+u+'\')">复制</button><button onclick="delI(\''+x.path+'\',\''+x.sha+'\')">删除</button></div><div class="img-info"><span>'+esc(x.name)+'</span><span>'+esc(x.slug)+'</span></div></div>'}).join(''):'<div class="empty">还没有图片</div>'}
+function renderImgs(){I('i-grid').innerHTML=imgs.length?imgs.map(x=>{const u=imgRef(x.name,x.slug);return '<div class="img-card"><img src="'+x.url+'" alt="'+esc(x.name)+'" loading="lazy"><div class="img-acts"><button onclick="cpy(\''+u+'\')">复制</button><button onclick="delI(\''+x.path+'\',\''+x.sha+'\')">删除</button></div><div class="img-info"><span>'+esc(x.name)+'</span><span>'+esc(x.slug)+'</span></div></div>'}).join(''):'<div class="empty">还没有图片</div>'}
 function cpy(u){navigator.clipboard.writeText(u);T('已复制','ok')}
 async function delI(p,sha){if(!confirm('删除？'))return;try{await gh('/contents/'+ghp(p),{method:'DELETE',body:JSON.stringify({message:'admin: delete image',sha,branch:B})});T('已删除','ok');loadImgs()}catch(e){T('删除失败: '+e.message,'err')}}
 
@@ -241,7 +269,7 @@ async function saveToml(content,msg){const f=await gh('/contents/hugo.toml');con
 function getVal(toml,key){const m=toml.match(new RegExp(key+'\\s*=\\s*"?([^"\\n]*)"?'));return m?m[1].trim():''}
 function setVal(toml,key,val){const re=new RegExp('('+key+'\\s*=\\s*"?)[^"\\n]*("?)');if(toml.match(re))return toml.replace(re,'$1'+val+'$2');return toml+'\n'+key+' = "'+val+'"'}
 async function loadProfile(){const t=await loadToml();I('pr-user').value=getVal(t,'username');I('pr-desc').value=getVal(t,'description');I('pr-avatar').value=getVal(t,'avatar');I('pr-cover').value=getVal(t,'headerMedia')}
-async function saveProfile(){try{let t=await loadToml();t=setVal(t,'username',I('pr-user').value);t=setVal(t,'description',I('pr-desc').value);t=setVal(t,'avatar',I('pr-avatar').value);t=setVal(t,'headerMedia',I('pr-cover').value);await saveToml(t,'update profile');T('已保存，正在部署...','ok');setTimeout(()=>doDeploy(),500)}catch(e){T('保存失败: '+e.message,'err')}}
+async function saveProfile(){try{let t=await loadToml();t=setVal(t,'username',I('pr-user').value);t=setVal(t,'description',I('pr-desc').value);t=setVal(t,'avatar',I('pr-avatar').value);t=setVal(t,'headerMedia',I('pr-cover').value);await saveToml(t,'update profile');T(LOCAL?'已保存（本地）':'已保存，正在部署...','ok');setTimeout(()=>doDeploy(),500)}catch(e){T('保存失败: '+e.message,'err')}}
 async function loadSite(){const t=await loadToml();I('st-title').value=getVal(t,'title');I('st-lang').value=getVal(t,'languageCode');I('st-foot').value=getVal(t,'footerText');I('st-cm').value=getVal(t,'commentMode');I('st-pjax').value=getVal(t,'enablePjax')}
 async function saveSite(){try{let t=await loadToml();t=setVal(t,'title',I('st-title').value);t=setVal(t,'languageCode',I('st-lang').value);t=setVal(t,'footerText',I('st-foot').value);t=setVal(t,'commentMode',I('st-cm').value);t=setVal(t,'enablePjax',I('st-pjax').value);await saveToml(t,'update site');T('已保存','ok')}catch(e){T('保存失败: '+e.message,'err')}}
 async function loadMusic(){const t=await loadToml();I('mu-url').value=getVal(t,'musicPluginUrl');I('mu-pl').value=getVal(t,'musicPlaylist');I('mu-auto').value=getVal(t,'musicAutoplay')}
@@ -252,7 +280,7 @@ async function loadFriends(){try{const f=await gh('/contents/'+PP.replace('conte
 async function saveFriends(){try{const path='data/friends.yml';let sha=null;try{const f=await gh('/contents/'+path);sha=f.sha}catch(_){}const pb={message:'admin: update friends',content:b64e(I('fr-yaml').value),branch:B};if(sha)pb.sha=sha;await gh('/contents/'+path,{method:'PUT',body:JSON.stringify(pb)});T('已保存','ok')}catch(e){T('保存失败: '+e.message,'err')}}
 
 // ======== Deploy ========
-async function doDeploy(){try{await gh('/actions/workflows/deploy.yml/dispatches',{method:'POST',body:JSON.stringify({ref:B})});T('已触发部署','ok')}catch(e){T('触发失败: '+e.message,'err')}}
+async function doDeploy(){if(LOCAL){T('本地模式：已保存，Hugo 自动热更新','ok');return}try{await gh('/actions/workflows/deploy.yml/dispatches',{method:'POST',body:JSON.stringify({ref:B})});T('已触发部署','ok')}catch(e){T('触发失败: '+e.message,'err')}}
 
 // ======== Drag & Drop ========
 ['dragover','dragenter'].forEach(ev=>document.body.addEventListener(ev,e=>{const z=e.target.closest('.up-zone');if(z){e.preventDefault();z.classList.add('drag')}}));

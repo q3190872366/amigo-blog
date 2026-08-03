@@ -97,6 +97,42 @@
 
       <!-- Editor -->
       <div id="ed">
+        <!-- 文章信息（按截图风格：返回+标题+结构化表单） -->
+        <div class="ed-info">
+          <div class="ed-info-h">
+            <button class="ed-back" onclick="go('posts')" title="返回文章列表">←</button>
+            <h2>编辑文章</h2>
+            <span class="ed-info-sub" id="em-sub"></span>
+          </div>
+          <div class="ed-info-form">
+            <div class="ed-info-title">文章信息</div>
+            <div class="ed-info-row">
+              <label>标题</label>
+              <input type="text" id="em-t" placeholder="我的静态博客动态化方案" oninput="syncFm()">
+            </div>
+            <div class="ed-info-row ed-info-slug">
+              <label>Slug</label>
+              <div class="ed-info-slug-w">
+                <input type="text" id="em-slug" placeholder="自动提取" oninput="syncFm()">
+                <span class="ed-info-tip">Slug (自动提取)</span>
+              </div>
+            </div>
+            <div class="ed-info-row ed-info-3">
+              <div><label>日期</label><input type="date" id="em-date" oninput="syncFm()"></div>
+              <div><label>作者</label><input type="text" id="em-author" placeholder="可选" oninput="syncFm()"></div>
+              <div><label>分类</label><input type="text" id="em-cats" placeholder="可选" oninput="syncFm()"></div>
+            </div>
+            <div class="ed-info-row ed-info-2">
+              <div><label>标签</label><input type="text" id="em-tags" placeholder="用膳号分隔" oninput="syncFm()"></div>
+              <div><label>AI 评论</label><input type="text" id="em-summary" placeholder="可选" oninput="syncFm()"></div>
+            </div>
+            <div class="ed-info-row">
+              <label>文件夹</label>
+              <div class="ed-info-folder" id="em-folder">—</div>
+            </div>
+          </div>
+        </div>
+
         <div class="ed-tb">
           <div class="ed-tb-l">
             <button onclick="doFmt('undo')" title="撤销 Ctrl+Z">↶</button>
@@ -133,19 +169,12 @@
             </select>
           </div>
         </div>
-        <div class="ed-meta-r">
-          <input type="text" id="em-t" placeholder="文章标题（必填）" style="flex:1">
-          <button class="btn btn-sm" onclick="openFm()" title="编辑 Front Matter">⚙️</button>
-        </div>
         <div class="ed-tabs"><div class="ed-tab on" data-pane="edit" onclick="swPane('edit')">编辑</div><div class="ed-tab" data-pane="preview" onclick="swPane('preview')">预览</div></div>
         <div class="ed-body" id="ed-body">
           <div class="ed-pane ed-edit"><div class="ed-wrap"><textarea id="editor" placeholder="开始写作..." spellcheck="false" oninput="upPrev()"></textarea></div></div>
           <div class="ed-pane ed-preview"><div id="preview"></div></div>
         </div>
-        <div class="ed-fm" id="ed-fm">
-          <div class="ed-fm-h"><span>Front Matter</span><button onclick="closeFm()">✕</button></div>
-          <textarea id="em-fm" placeholder="title: &#10;date: &#10;draft: true&#10;categories:&#10;  - tag&#10;tags:&#10;  - tag"></textarea>
-        </div>
+        <textarea id="em-fm" style="display:none"></textarea>
         <div class="ed-st">
           <div class="ed-st-l">
             <span id="st-info">Ctrl+S 保存 · Ctrl+B 粗体 · Ctrl+I 斜体</span>
