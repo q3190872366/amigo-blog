@@ -2,363 +2,255 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>博客管理后台</title>
 <script src="https://cdn.jsdelivr.net/npm/marked@11/marked.min.js"></script>
 <style>
-:root {
-  --bg: #f6f5f0; --card: #fff; --text: #2a2a2a; --muted: #888;
-  --accent: #3b8a5e; --accent-hover: #2d6f4a; --border: #e8e4d8;
-  --red: #dc2626; --red-bg: #fef2f2; --green: #16a34a; --green-bg: #f0fdf4;
-  --orange: #f59e0b; --orange-bg: #fffbeb; --blue: #2563eb; --blue-bg: #eff6ff;
-  --sidebar-bg: #1a2620; --sidebar-text: #d4d4d4; --sidebar-active: #2a3a32;
-  --sidebar-accent: #5cb888;
-  --topbar-bg: #fff;
-}
-[data-theme="dark"] {
-  --bg: #1a1a1a; --card: #242424; --text: #e0e0e0; --muted: #999;
-  --accent: #5cb888; --accent-hover: #7ecaa1; --border: #333;
-  --topbar-bg: #242424;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); height: 100dvh; overflow: hidden; }
-a { color: var(--accent); text-decoration: none; }
-input, textarea, button { font-family: inherit; font-size: 14px; }
-
+:root{--b:#f5f2eb;--c:#fff;--t:#1a1a1a;--m:#8b8b8b;--a:#6366f1;--ah:#4f46e5;--e:#e8e4dc;--r:#ef4444;--rb:#fef2f2;--g:#22c55e;--gb:#f0fdf4;--o:#f59e0b;--ob:#fffbeb;--sb:#1e1e2e;--st:#cdd6f4;--sa:#313244;--sh:#27273a}
+.dark{--b:#11111b;--c:#1e1e2e;--t:#cdd6f4;--m:#6c7086;--a:#cba6f7;--ah:#b4befe;--e:#313244;--sb:#0f0f1a}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--b);color:var(--t);height:100dvh;overflow:hidden}
+input,textarea,select,button{font-family:inherit;font-size:14px;outline:none}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--e);border-radius:3px}
 /* Login */
-#login { display: flex; align-items: center; justify-content: center; height: 100dvh; flex-direction: column; gap: 16px; padding: 20px; background: var(--bg); }
-#login h1 { font-size: 24px; display: flex; align-items: center; gap: 8px; }
-#login .logo { width: 36px; height: 36px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; }
-#login input { width: 100%; max-width: 400px; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); }
-#login input:focus { outline: 2px solid var(--accent); }
-#login .hint { color: var(--muted); font-size: 13px; text-align: center; max-width: 400px; }
-#login button { padding: 12px 32px; background: var(--accent); color: #fff; border: none; border-radius: 8px; cursor: pointer; }
-#login button:hover { background: var(--accent-hover); }
-
-/* App layout */
-#app { display: none; height: 100dvh; grid-template-columns: 220px 1fr; grid-template-rows: 1fr 50px; }
-#app.active { display: grid; }
-
-#sidebar { background: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; grid-row: 1 / 3; }
-.sidebar-header { padding: 16px 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-.sidebar-header .logo { width: 28px; height: 28px; background: var(--sidebar-accent); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 14px; }
-.sidebar-header h1 { font-size: 16px; color: #fff; }
-.sidebar-nav { flex: 1; overflow-y: auto; padding: 12px 0; }
-.nav-group { margin-bottom: 8px; }
-.nav-group-title { padding: 6px 20px; font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; }
-.nav-item { padding: 10px 20px; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 10px; border-left: 3px solid transparent; }
-.nav-item:hover { background: rgba(255,255,255,0.05); }
-.nav-item.active { background: var(--sidebar-active); border-left-color: var(--sidebar-accent); color: #fff; }
-.nav-icon { font-size: 16px; }
-.sidebar-footer { padding: 12px 20px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 12px; color: rgba(255,255,255,0.5); }
-.sidebar-footer a { color: rgba(255,255,255,0.7); display: block; padding: 4px 0; cursor: pointer; }
-.sidebar-footer a:hover { color: #fff; }
-
-#main { display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
-#topbar { background: var(--topbar-bg); padding: 12px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-#topbar .breadcrumb { display: flex; gap: 6px; color: var(--muted); font-size: 13px; }
-#topbar .breadcrumb span:not(:last-child)::after { content: ' / '; margin-left: 6px; }
-#topbar .breadcrumb span:last-child { color: var(--text); font-weight: 500; }
-.topbar-actions { display: flex; gap: 8px; align-items: center; }
-.btn { padding: 7px 14px; border: 1px solid var(--border); border-radius: 6px; background: var(--card); color: var(--text); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
-.btn:hover { background: var(--bg); }
-.btn-accent { background: var(--accent); color: #fff; border-color: var(--accent); }
-.btn-accent:hover { background: var(--accent-hover); }
-.btn-sm { padding: 5px 10px; font-size: 12px; }
-.menu-toggle { display: none; background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text); }
-
-#content { flex: 1; overflow-y: auto; padding: 24px; }
-.view { display: none; }
-.view.active { display: block; }
-
+#login{display:flex;align-items:center;justify-content:center;height:100dvh;background:var(--b)}
+.login-card{background:var(--c);border-radius:16px;padding:40px 32px;width:380px;max-width:90vw;box-shadow:0 4px 24px rgba(0,0,0,.08);text-align:center}
+.login-card h1{font-size:22px;margin-bottom:4px}.login-card p{color:var(--m);font-size:13px;margin-bottom:24px}
+.login-card .field{margin-bottom:14px;text-align:left}
+.login-card label{font-size:12px;color:var(--m);display:block;margin-bottom:4px}
+.login-card input{width:100%;padding:10px 14px;border:1px solid var(--e);border-radius:8px;background:var(--b);color:var(--t);font-size:14px;transition:border .2s}
+.login-card input:focus{border-color:var(--a)}
+.login-card .hint{font-size:11px;color:var(--m);margin-top:16px;line-height:1.5}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:1px solid var(--e);background:var(--c);color:var(--t);cursor:pointer;font-size:13px;transition:all .15s}.btn:hover{background:var(--b)}
+.btn-p{background:var(--a);color:#fff;border-color:var(--a)}.btn-p:hover{background:var(--ah)}
+.btn-d{border-color:var(--r);color:var(--r)}.btn-d:hover{background:var(--rb)}
+.btn-sm{padding:5px 10px;font-size:12px}.btn-xs{padding:3px 8px;font-size:11px}
+/* App */
+#app{display:none;height:100dvh;grid-template-columns:220px 1fr}.app-open{display:grid!important}
+/* Sidebar */
+#sidebar{background:var(--sb);color:var(--st);display:flex;flex-direction:column;grid-row:1}
+.sb-h{padding:20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--sh)}
+.sb-logo{width:32px;height:32px;background:linear-gradient(135deg,var(--a),#a78bfa);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px}
+.sb-h h1{font-size:15px;color:#fff;font-weight:600}
+.sb-nav{flex:1;overflow-y:auto;padding:8px 0}
+.nav-g{margin-bottom:4px}.nav-gt{padding:8px 20px 4px;font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:.5px}
+.nav-item{padding:10px 20px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:10px;border-left:3px solid transparent;transition:all .15s;color:var(--st)}
+.nav-item:hover{background:var(--sh)}
+.nav-item.on{background:var(--sa);border-left-color:var(--a);color:#fff}
+.nav-badge{font-size:10px;background:var(--a);color:#fff;padding:1px 6px;border-radius:8px;margin-left:auto}
+.sb-f{padding:12px 20px;border-top:1px solid var(--sh);font-size:12px;color:var(--m)}
+.sb-f a{cursor:pointer;display:block;padding:4px 0;transition:color .15s}.sb-f a:hover{color:var(--t)}
+/* Main */
+#main{display:flex;flex-direction:column;overflow:hidden;background:var(--b)}
+#topbar{background:var(--c);padding:12px 24px;border-bottom:1px solid var(--e);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.bc{display:flex;gap:4px;color:var(--m);font-size:12px}.bc span:last-child{color:var(--t);font-weight:500}
+.top-actions{display:flex;gap:8px;align-items:center}
+.menu-btn{display:none;background:none;border:none;font-size:20px;cursor:pointer;color:var(--t);padding:4px}
+#content{flex:1;overflow-y:auto;padding:24px}.view{display:none}.view.on{display:block}
 /* Dashboard */
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-.stat-card { background: var(--card); border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; border: 1px solid var(--border); }
-.stat-icon { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-.stat-icon.green { background: var(--green-bg); color: var(--green); }
-.stat-icon.orange { background: var(--orange-bg); color: var(--orange); }
-.stat-icon.red { background: var(--red-bg); color: var(--red); }
-.stat-icon.blue { background: var(--blue-bg); color: var(--blue); }
-.stat-value { font-size: 24px; font-weight: bold; }
-.stat-label { font-size: 12px; color: var(--muted); }
-
-.panel { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid var(--border); margin-bottom: 16px; }
-.panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.panel-title { font-size: 16px; font-weight: 600; }
-.panel-title .icon { margin-right: 8px; }
-.health-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--border); }
-.health-row:last-child { border-bottom: none; }
-.health-row .name { display: flex; align-items: center; gap: 10px; }
-.health-row .status-pill { padding: 3px 10px; border-radius: 12px; font-size: 12px; }
-.status-pill.ok { background: var(--green-bg); color: var(--green); }
-.status-pill.warn { background: var(--orange-bg); color: var(--orange); }
-.status-pill.error { background: var(--red-bg); color: var(--red); }
-.dist-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border); cursor: pointer; }
-.dist-row:hover { background: var(--bg); }
-.dist-row:last-child { border-bottom: none; }
-
-/* Content list */
-.content-toolbar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-.content-toolbar input { flex: 1; min-width: 200px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); }
-.content-toolbar select { padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); }
-.post-list { background: var(--card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
-.post-item { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-.post-item:hover { background: var(--bg); }
-.post-item:last-child { border-bottom: none; }
-.post-item .title { font-weight: 500; }
-.post-item .meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
-.post-item .badge { padding: 2px 8px; border-radius: 10px; font-size: 11px; background: var(--orange-bg); color: var(--orange); }
-.post-item .badge.published { background: var(--green-bg); color: var(--green); }
-
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--c);border-radius:12px;padding:20px;border:1px solid var(--e);display:flex;align-items:center;gap:14px}
+.stat-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.stat-icon.c1{background:var(--gb);color:var(--g)}.stat-icon.c2{background:#eff6ff;color:#3b82f6}
+.stat-icon.c3{background:var(--ob);color:var(--o)}.stat-icon.c4{background:var(--rb);color:var(--r)}
+.stat-val{font-size:22px;font-weight:700;line-height:1.2}.stat-lbl{font-size:11px;color:var(--m)}
+.panel{background:var(--c);border-radius:12px;border:1px solid var(--e);margin-bottom:16px}.panel-h{padding:14px 18px;border-bottom:1px solid var(--e);display:flex;justify-content:space-between;align-items:center}
+.panel-t{font-size:14px;font-weight:600}.panel-b{padding:14px 18px}
+.h-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--e)}.h-row:last-child{border-bottom:none}
+.pill{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500}
+.pill.ok{background:var(--gb);color:var(--g)}.pill.err{background:var(--rb);color:var(--r)}.pill.warn{background:var(--ob);color:var(--o)}
+/* Posts */
+.tb{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}.tb input{flex:1;min-width:160px;padding:8px 12px;border:1px solid var(--e);border-radius:8px;background:var(--c);color:var(--t)}.tb select{padding:8px 12px;border:1px solid var(--e);border-radius:8px;background:var(--c);color:var(--t)}
+.plist{border-radius:12px;overflow:hidden;border:1px solid var(--e)}
+.pitem{padding:14px 18px;border-bottom:1px solid var(--e);display:flex;justify-content:space-between;align-items:center;cursor:pointer;background:var(--c);transition:background .1s}.pitem:hover{background:var(--b)}
+.pitem:last-child{border-bottom:none}.pitem .title{font-weight:500;font-size:14px}.pitem .meta{font-size:11px;color:var(--m);margin-top:3px}
+.pitem .badge{padding:2px 8px;border-radius:10px;font-size:10px}.badge.pub{background:var(--gb);color:var(--g)}.badge.draft{background:var(--ob);color:var(--o)}
+.empty{text-align:center;padding:48px 20px;color:var(--m);font-size:13px}
 /* Editor */
-#editor-view { display: none; flex-direction: column; height: 100%; }
-#editor-view.active { display: flex; }
-.editor-toolbar { display: flex; gap: 4px; padding: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 8px 8px 0 0; flex-wrap: wrap; }
-.toolbar-btn { padding: 6px 10px; border: none; background: transparent; cursor: pointer; border-radius: 4px; color: var(--text); font-size: 13px; }
-.toolbar-btn:hover { background: var(--bg); }
-.toolbar-divider { width: 1px; background: var(--border); margin: 4px 6px; }
-.editor-split { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-top: none; border-radius: 0 0 8px 8px; overflow: hidden; }
-.editor-split textarea { border: none; resize: none; padding: 16px; font-family: "SF Mono", "Menlo", "Consolas", monospace; font-size: 14px; line-height: 1.6; background: var(--card); color: var(--text); }
-.editor-split #preview { padding: 16px; overflow-y: auto; line-height: 1.7; background: var(--card); }
-.editor-split #preview img { max-width: 100%; border-radius: 6px; }
-.editor-split #preview h1 { font-size: 22px; margin: 12px 0; }
-.editor-split #preview h2 { font-size: 18px; margin: 10px 0; }
-.editor-split #preview p { margin: 8px 0; }
-.editor-split #preview code { background: var(--bg); padding: 2px 6px; border-radius: 3px; font-size: 13px; }
-.editor-split #preview pre { background: var(--bg); padding: 12px; border-radius: 6px; overflow-x: auto; }
-.editor-meta { display: flex; gap: 12px; flex-wrap: wrap; padding: 12px 16px; background: var(--card); border: 1px solid var(--border); border-top: none; border-radius: 0 0 8px 8px; align-items: center; }
-.editor-meta input, .editor-meta select { padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--text); }
-.editor-meta input { width: auto; }
-.editor-meta label { font-size: 12px; color: var(--muted); }
-.editor-meta label.switch { display: flex; align-items: center; gap: 6px; cursor: pointer; }
-
-.empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
-
-/* Images */
-.image-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
-.image-card { background: var(--card); border-radius: 8px; overflow: hidden; border: 1px solid var(--border); position: relative; }
-.image-card img { width: 100%; height: 120px; object-fit: cover; display: block; }
-.image-card .img-meta { padding: 8px; font-size: 11px; color: var(--muted); }
-.image-card .img-actions { position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; }
-.image-card .img-actions button { padding: 3px 6px; background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; }
-.upload-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 40px 20px; text-align: center; cursor: pointer; margin-bottom: 16px; transition: all 0.2s; background: var(--card); }
-.upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: var(--bg); }
-.upload-zone .icon { font-size: 36px; color: var(--muted); margin-bottom: 8px; }
-.upload-options { display: flex; gap: 16px; justify-content: center; margin-top: 10px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
-.upload-options label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
-
+#ed-view{display:none;flex-direction:column;height:100%}#ed-view.on{display:flex}
+.ed-tb{display:flex;gap:3px;padding:6px 10px;background:var(--c);border:1px solid var(--e);border-radius:8px 8px 0 0;flex-wrap:wrap;overflow-x:auto}
+.ed-tb button{padding:5px 9px;border:none;background:transparent;cursor:pointer;border-radius:4px;color:var(--t);font-size:13px;white-space:nowrap}.ed-tb button:hover{background:var(--b)}
+.ed-tb .sep{width:1px;background:var(--e);margin:3px 4px}
+.ed-body{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--e);border:1px solid var(--e);border-top:none;border-radius:0 0 8px 8px;overflow:hidden}
+.ed-body textarea{border:none;resize:none;padding:16px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:13px;line-height:1.7;background:var(--c);color:var(--t)}
+.ed-body #preview{padding:16px;overflow-y:auto;line-height:1.7;background:var(--c)}
+.ed-body #preview img{max-width:100%;border-radius:6px}.ed-body #preview h1{font-size:20px;margin:12px 0}.ed-body #preview h2{font-size:17px;margin:10px 0}
+.ed-body #preview h3{font-size:15px;margin:9px 0}.ed-body #preview p{margin:7px 0}
+.ed-body #preview code{background:var(--b);padding:2px 6px;border-radius:3px;font-size:12px}
+.ed-body #preview pre{background:var(--b);padding:12px;border-radius:6px;overflow-x:auto}
+.ed-meta{display:flex;gap:10px;flex-wrap:wrap;padding:10px 14px;background:var(--c);border:1px solid var(--e);border-top:none;border-radius:0 0 8px 8px;align-items:center}
+.ed-meta input,.ed-meta select{padding:6px 10px;border:1px solid var(--e);border-radius:6px;background:var(--b);color:var(--t)}
+.ed-meta label{font-size:11px;color:var(--m)}.ed-meta label.sw{display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;color:var(--t)}
+/* Media */
+.upload-zone{border:2px dashed var(--e);border-radius:12px;padding:36px;text-align:center;cursor:pointer;background:var(--c);margin-bottom:16px;transition:all .2s}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--a);background:rgba(99,102,241,.04)}
+.upload-zone .ic{font-size:32px;color:var(--m);margin-bottom:8px}
+.up-opts{display:flex;gap:14px;justify-content:center;margin-top:10px;font-size:12px;color:var(--m);flex-wrap:wrap}
+.up-opts label{display:flex;align-items:center;gap:4px;cursor:pointer}
+.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.img-card{background:var(--c);border-radius:8px;overflow:hidden;border:1px solid var(--e);position:relative}
+.img-card img{width:100%;height:110px;object-fit:cover;display:block}
+.img-info{padding:6px 8px;font-size:10px;color:var(--m);display:flex;justify-content:space-between}
+.img-acts{position:absolute;top:5px;right:5px;display:none;gap:3px}.img-card:hover .img-acts{display:flex}
+.img-acts button{padding:2px 6px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px}
 /* Settings */
-.settings-form { max-width: 600px; }
-.settings-form .field { margin-bottom: 16px; }
-.settings-form label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
-.settings-form input { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); }
-
+.set-form{max-width:560px}.set-form .field{margin-bottom:14px}
+.set-form label{display:block;font-size:12px;color:var(--m);margin-bottom:5px}
+.set-form input,.set-form textarea{width:100%;padding:9px 12px;border:1px solid var(--e);border-radius:8px;background:var(--b);color:var(--t);font-size:13px}
+.set-form textarea{resize:vertical;min-height:80px;font-family:monospace}
 /* Toast */
-#toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 12px 20px; border-radius: 8px; font-size: 14px; z-index: 999; display: none; max-width: 90vw; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-#toast.success { display: block; background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
-#toast.error { display: block; background: var(--red-bg); color: var(--red); border: 1px solid var(--red); }
-#toast.info { display: block; background: var(--card); color: var(--text); border: 1px solid var(--accent); }
-
-#mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 50; }
-#mobile-overlay.open { display: block; }
-
+#toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:8px;font-size:13px;z-index:999;display:none;max-width:90vw;box-shadow:0 4px 12px rgba(0,0,0,.1);animation:slideUp .25s ease}
+#toast.ok{display:block;background:var(--gb);color:var(--g);border:1px solid var(--g)}
+#toast.err{display:block;background:var(--rb);color:var(--r);border:1px solid var(--r)}
+#toast.info{display:block;background:var(--c);color:var(--t);border:1px solid var(--a)}
+@keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+/* Modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center}
+.modal-bg.on{display:flex}.modal-bd{background:var(--c);border-radius:12px;padding:24px;max-width:90vw;max-height:80vh;overflow-y:auto}
+.modal-bd img{max-width:100%;max-height:70vh;border-radius:6px}
+.modal-bd h2{font-size:16px;margin-bottom:8px}.modal-bd p{font-size:12px;color:var(--m)}
 /* Mobile */
-@media (max-width: 768px) {
-  #app { grid-template-columns: 1fr; grid-template-rows: 1fr 50px; }
-  #sidebar { position: fixed; left: -240px; top: 0; bottom: 0; width: 220px; z-index: 100; transition: left 0.2s; }
-  #sidebar.open { left: 0; }
-  .menu-toggle { display: block; }
-  .editor-split { grid-template-columns: 1fr; }
-  #content { padding: 12px; }
+@media(max-width:768px){
+  #app{grid-template-columns:1fr}#sidebar{position:fixed;left:-240px;top:0;bottom:0;width:220px;z-index:50;transition:left .2s}#sidebar.open{left:0}
+  .menu-btn{display:block}.ed-body{grid-template-columns:1fr}
+  #login .login-card{padding:28px 20px}#content{padding:12px}.stats{grid-template-columns:1fr 1fr}
 }
 </style>
 </head>
 <body>
 
 <!-- Login -->
-<div id="login">
-  <h1><div class="logo">D</div>博客管理后台</h1>
-  <input type="password" id="pat-input" placeholder="GitHub PAT (repo + workflow 权限)">
-  <input type="text" id="owner-input" placeholder="用户名" value="q3190872366">
-  <input type="text" id="repo-input" placeholder="仓库名" value="amigo-blog">
-  <button onclick="login()">进入后台</button>
-  <div class="hint">PAT 仅保存在浏览器本地，不会上传</div>
-</div>
+<div id="login"><div class="login-card">
+  <h1>📋 博客管理后台</h1>
+  <p>使用 GitHub PAT 登录，令牌仅在本地保存</p>
+  <div class="field"><label>GitHub Token</label><input type="password" id="li-token" placeholder="ghp_..."><input type="hidden" id="li-owner" value="q3190872366"><input type="hidden" id="li-repo" value="amigo-blog"></div>
+  <button class="btn btn-p" onclick="doLogin()" style="width:100%;justify-content:center;padding:12px">登 录</button>
+  <div class="hint">Token 需要 repo + workflow 权限<br>数据均存储于 GitHub 仓库，云端构建部署</div>
+</div></div>
 
 <!-- App -->
 <div id="app">
   <aside id="sidebar">
-    <div class="sidebar-header">
-      <div class="logo">D</div>
-      <h1>东 风</h1>
-    </div>
-    <nav class="sidebar-nav">
-      <div class="nav-group">
-        <div class="nav-item active" data-view="dashboard" onclick="switchView('dashboard')">
-          <span class="nav-icon">📊</span>仪表盘
-        </div>
+    <div class="sb-h"><div class="sb-logo">A</div><h1>后台管理</h1></div>
+    <nav class="sb-nav">
+      <div class="nav-g"><div class="nav-item on" data-v="dashboard" onclick="goView('dashboard')">📊 仪表盘</div></div>
+      <div class="nav-g"><div class="nav-gt">内容管理</div>
+        <div class="nav-item" data-v="posts" onclick="goView('posts')">📝 文章管理</div>
+        <div class="nav-item" data-v="media" onclick="goView('media')">🖼️ 素材管理</div>
       </div>
-      <div class="nav-group">
-        <div class="nav-group-title">日常操作</div>
-        <div class="nav-item" data-view="content" onclick="switchView('content')">
-          <span class="nav-icon">📝</span>内容管理
-        </div>
-        <div class="nav-item" data-view="images" onclick="switchView('images')">
-          <span class="nav-icon">🖼️</span>图片管理
-        </div>
-      </div>
-      <div class="nav-group">
-        <div class="nav-group-title">系统工具</div>
-        <div class="nav-item" data-view="settings" onclick="switchView('settings')">
-          <span class="nav-icon">⚙️</span>系统设置
-        </div>
+      <div class="nav-g"><div class="nav-gt">系统</div>
+        <div class="nav-item" data-v="settings" onclick="goView('settings')">⚙️ 站点设置</div>
+        <div class="nav-item" data-v="settings" onclick="goView('settings')">🔧 GitHub 配置</div>
       </div>
     </nav>
-    <div class="sidebar-footer">
-      <a onclick="toggleTheme()">🌗 切换主题</a>
-      <a onclick="logout()">↪ 退出登录</a>
+    <div class="sb-f">
+      <a onclick="toggleTheme()">🌗 切换暗色</a>
+      <a onclick="doLogout()">↪ 退出</a>
     </div>
   </aside>
 
   <div id="main">
     <div id="topbar">
-      <div style="display:flex;align-items:center;gap:12px">
-        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-        <div class="breadcrumb" id="breadcrumb">
-          <span>仪表盘</span>
-        </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div class="bc" id="bc"><span>仪表盘</span></div>
       </div>
-      <div class="topbar-actions" id="topbar-actions">
-        <button class="btn btn-accent" onclick="triggerBuild()">🚀 部署</button>
+      <div class="top-actions" id="top-actions">
+        <button class="btn btn-p btn-sm" onclick="doDeploy()">🚀 部署</button>
       </div>
     </div>
 
     <div id="content">
       <!-- Dashboard -->
-      <div class="view active" id="view-dashboard">
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon green">📝</div>
-            <div><div class="stat-value" id="stat-posts">-</div><div class="stat-label">文章总数</div></div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon blue">🖼️</div>
-            <div><div class="stat-value" id="stat-images">-</div><div class="stat-label">图片资源</div></div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon orange">📁</div>
-            <div><div class="stat-value" id="stat-drafts">-</div><div class="stat-label">草稿</div></div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon green">📅</div>
-            <div><div class="stat-value" id="stat-recent">-</div><div class="stat-label">最近 7 天</div></div>
-          </div>
+      <div class="view on" id="v-dashboard">
+        <div class="stats">
+          <div class="stat-card"><div class="stat-icon c1">📝</div><div><div class="stat-val" id="s-posts">-</div><div class="stat-lbl">文章</div></div></div>
+          <div class="stat-card"><div class="stat-icon c2">🖼️</div><div><div class="stat-val" id="s-imgs">-</div><div class="stat-lbl">图片</div></div></div>
+          <div class="stat-card"><div class="stat-icon c3">📁</div><div><div class="stat-val" id="s-drafts">-</div><div class="stat-lbl">草稿</div></div></div>
+          <div class="stat-card"><div class="stat-icon c4">📅</div><div><div class="stat-val" id="s-recent">-</div><div class="stat-lbl">近7天</div></div></div>
         </div>
-
-        <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
-          <div class="panel">
-            <div class="panel-header">
-              <div class="panel-title"><span class="icon">📊</span>系统健康</div>
-              <button class="btn btn-sm" onclick="loadDashboard()">↻ 刷新</button>
-            </div>
-            <div class="health-row"><div class="name">📝 GitHub PAT</div><div class="status-pill ok" id="health-pat">正常</div></div>
-            <div class="health-row"><div class="name">📦 仓库访问</div><div class="status-pill" id="health-repo">检测中</div></div>
-            <div class="health-row"><div class="name">🚀 Actions 工作流</div><div class="status-pill" id="health-workflow">检测中</div></div>
-            <div class="health-row"><div class="name">🌐 博客可访问</div><div class="status-pill" id="health-site">检测中</div></div>
-          </div>
-          <div class="panel">
-            <div class="panel-header"><div class="panel-title"><span class="icon">📊</span>内容分布</div></div>
-            <div class="dist-row" onclick="switchView('content')">
-              <div>📝 文章</div><div><span id="dist-posts">-</span> 篇 ›</div>
-            </div>
-            <div class="dist-row" onclick="switchView('images')">
-              <div>🖼️ 图片</div><div><span id="dist-images">-</span> 张 ›</div>
-            </div>
-            <div class="dist-row">
-              <div>📁 草稿</div><div><span id="dist-drafts">-</span> 篇 ›</div>
-            </div>
+        <div class="panel"><div class="panel-h"><div class="panel-t">📊 系统状态</div><button class="btn btn-xs" onclick="loadDash()">↻ 刷新</button></div>
+          <div class="panel-b">
+            <div class="h-row"><span>📡 GitHub API</span><span class="pill ok" id="h-api">正常</span></div>
+            <div class="h-row"><span>📦 仓库</span><span class="pill" id="h-repo">检测中</span></div>
+            <div class="h-row"><span>🚀 部署工作流</span><span class="pill" id="h-wf">检测中</span></div>
+            <div class="h-row"><span>🌐 博客可访问</span><span class="pill" id="h-site">检测中</span></div>
           </div>
         </div>
       </div>
 
-      <!-- Content -->
-      <div class="view" id="view-content">
-        <div class="content-toolbar">
-          <input type="text" id="search-input" placeholder="搜索文章..." oninput="renderContentList()">
-          <select id="filter-status" onchange="renderContentList()">
-            <option value="all">全部</option>
-            <option value="published">已发布</option>
-            <option value="draft">草稿</option>
-          </select>
-          <button class="btn btn-accent" onclick="newPost()">+ 新建文章</button>
+      <!-- Posts -->
+      <div class="view" id="v-posts">
+        <div class="tb">
+          <input type="text" id="p-search" placeholder="搜索文章..." oninput="renderPosts()">
+          <select id="p-filter" onchange="renderPosts()"><option value="all">全部</option><option value="pub">已发布</option><option value="draft">草稿</option></select>
+          <button class="btn btn-p btn-sm" onclick="newPost()">+ 新建</button>
         </div>
-        <div class="post-list" id="post-list"><div class="empty-state">加载中...</div></div>
+        <div class="plist" id="p-list"><div class="empty">加载中...</div></div>
       </div>
 
       <!-- Editor -->
-      <div id="editor-view">
-        <div class="editor-toolbar">
-          <button class="toolbar-btn" onclick="format('bold')" title="粗体 Ctrl+B"><b>B</b></button>
-          <button class="toolbar-btn" onclick="format('italic')" title="斜体 Ctrl+I"><i>I</i></button>
-          <button class="toolbar-btn" onclick="format('strikethrough')" title="删除线"><s>S</s></button>
-          <button class="toolbar-btn" onclick="format('code')" title="行内代码">‹›</button>
-          <span class="toolbar-divider"></span>
-          <button class="toolbar-btn" onclick="format('h1')" title="标题1">H1</button>
-          <button class="toolbar-btn" onclick="format('h2')" title="标题2">H2</button>
-          <button class="toolbar-btn" onclick="format('h3')" title="标题3">H3</button>
-          <span class="toolbar-divider"></span>
-          <button class="toolbar-btn" onclick="format('ul')" title="无序列表">•</button>
-          <button class="toolbar-btn" onclick="format('ol')" title="有序列表">1.</button>
-          <button class="toolbar-btn" onclick="format('todo')" title="任务">☐</button>
-          <button class="toolbar-btn" onclick="format('quote')" title="引用">"</button>
-          <span class="toolbar-divider"></span>
-          <button class="toolbar-btn" onclick="format('link')" title="链接">🔗</button>
-          <button class="toolbar-btn" onclick="document.getElementById('img-upload').click()" title="图片">🖼️</button>
-          <button class="toolbar-btn" onclick="format('codeblock')" title="代码块">```</button>
+      <div id="ed-view">
+        <div class="ed-tb">
+          <button onclick="fmt('bold')" title="粗体"><b>B</b></button>
+          <button onclick="fmt('italic')" title="斜体"><i>I</i></button>
+          <button onclick="fmt('strike')" title="删除线"><s>S</s></button>
+          <button onclick="fmt('code')" title="行内代码">&lt;/&gt;</button>
+          <span class="sep"></span>
+          <button onclick="fmt('h2')">H2</button><button onclick="fmt('h3')">H3</button>
+          <span class="sep"></span>
+          <button onclick="fmt('ul')">•</button><button onclick="fmt('ol')">1.</button>
+          <button onclick="fmt('task')">☐</button><button onclick="fmt('quote')">&ldquo;</button>
+          <span class="sep"></span>
+          <button onclick="fmt('link')">🔗</button>
+          <button onclick="document.getElementById('img-pick').click()">🖼️</button>
+          <button onclick="fmt('pre')">```</button>
         </div>
-        <div class="editor-split">
-          <textarea id="editor" placeholder="开始写作..." oninput="updatePreview()"></textarea>
+        <div class="ed-body">
+          <textarea id="editor" placeholder="在此书写 Markdown..." oninput="upPreview()"></textarea>
           <div id="preview"></div>
         </div>
-        <div class="editor-meta">
-          <label>标题</label><input type="text" id="meta-title" placeholder="必填" style="flex:1;min-width:200px">
-          <label>分类</label><input type="text" id="meta-category" placeholder="单选">
-          <label>标签</label><input type="text" id="meta-tags" placeholder="逗号分隔">
-          <label class="switch"><input type="checkbox" id="meta-draft"> 草稿</label>
-          <label class="switch"><input type="checkbox" id="meta-webp" checked> 上传图片转 WebP</label>
-          <input type="file" id="img-upload" accept="image/*" style="display:none" onchange="uploadImageFromFile(this.files)">
-          <button class="btn btn-sm" onclick="savePost(false)" style="margin-left:auto">💾 保存草稿</button>
-          <button class="btn btn-accent btn-sm" onclick="savePost(true)">✅ 发布</button>
-          <button class="btn btn-sm" style="color:var(--red);border-color:var(--red)" onclick="deletePost()" id="delete-btn">🗑️</button>
-          <button class="btn btn-sm" onclick="switchView('content')">← 返回</button>
+        <div class="ed-meta">
+          <label>标题</label><input type="text" id="em-title" placeholder="必填" style="flex:1;min-width:120px">
+          <label>分类</label><input type="text" id="em-cat" placeholder="可选" style="width:100px">
+          <label>标签</label><input type="text" id="em-tags" placeholder="逗号分隔" style="width:140px">
+          <label class="sw"><input type="checkbox" id="em-draft" checked> 草稿</label>
+          <label class="sw"><input type="checkbox" id="em-webp" checked> WebP</label>
+          <input type="file" id="img-pick" accept="image/*" style="display:none" onchange="upImg(this.files)">
+          <span style="flex:1"></span>
+          <button class="btn btn-sm" onclick="savePost(false)">💾 草稿</button>
+          <button class="btn btn-p btn-sm" onclick="savePost(true)">✅ 发布</button>
+          <button class="btn btn-d btn-sm" onclick="delPost()" id="btn-del">🗑️</button>
+          <button class="btn btn-sm" onclick="goView('posts')">← 返回</button>
         </div>
       </div>
 
-      <!-- Images -->
-      <div class="view" id="view-images">
-        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('img-up').click()">
-          <div class="icon">📤</div>
-          <div><strong>点击或拖拽图片上传</strong></div>
-          <div class="upload-options">
-            <label>最大宽度 <input type="number" id="img-max-width" value="1600" style="width:80px;padding:4px 8px"></label>
-            <label>质量 <input type="number" id="img-quality" value="82" min="1" max="100" style="width:60px;padding:4px 8px"></label>
-            <label><input type="checkbox" id="img-auto-webp" checked> 自动转 WebP</label>
+      <!-- Media -->
+      <div class="view" id="v-media">
+        <div class="upload-zone" onclick="document.getElementById('img-up').click()" id="up-zone">
+          <div class="ic">📤</div>
+          <div><b>点击或拖拽图片上传</b></div>
+          <div class="up-opts">
+            <label>最大宽 <input type="number" id="img-mw" value="1600" style="width:70px;padding:3px 6px"></label>
+            <label>质量 <input type="number" id="img-q" value="82" min="1" max="100" style="width:50px;padding:3px 6px"></label>
+            <label><input type="checkbox" id="img-webp" checked> WebP</label>
           </div>
-          <input type="file" id="img-up" accept="image/*" multiple style="display:none" onchange="uploadImages(this.files)">
+          <input type="file" id="img-up" accept="image/*" multiple style="display:none" onchange="upImgs(this.files)">
         </div>
-        <div class="image-grid" id="image-grid"><div class="empty-state">加载中...</div></div>
+        <div class="img-grid" id="img-grid"><div class="empty">加载中...</div></div>
       </div>
 
       <!-- Settings -->
-      <div class="view" id="view-settings">
-        <div class="panel">
-          <div class="panel-header"><div class="panel-title">配置</div></div>
-          <div class="settings-form">
-            <div class="field"><label>GitHub PAT</label><input type="password" id="set-pat" placeholder="ghp_..."></div>
-            <div class="field"><label>仓库</label><input type="text" id="set-repo" placeholder="owner/repo"></div>
-            <div class="field"><label>分支</label><input type="text" id="set-branch" placeholder="master" value="master"></div>
-            <div class="field"><label>文章路径</label><input type="text" id="set-path" placeholder="content/posts" value="content/posts"></div>
-            <button class="btn btn-accent" onclick="saveSettings()">保存</button>
+      <div class="view" id="v-settings">
+        <div class="panel"><div class="panel-h"><div class="panel-t">GitHub 配置</div></div>
+          <div class="panel-b">
+            <div class="set-form">
+              <div class="field"><label>Token</label><input type="password" id="s-token"></div>
+              <div class="field"><label>仓库 (owner/repo)</label><input type="text" id="s-repo" value="q3190872366/amigo-blog"></div>
+              <div class="field"><label>分支</label><input type="text" id="s-branch" value="master"></div>
+              <div class="field"><label>文章路径</label><input type="text" id="s-path" value="content/posts"></div>
+              <button class="btn btn-p btn-sm" onclick="saveConfig()">保存</button>
+            </div>
           </div>
         </div>
       </div>
@@ -366,582 +258,249 @@ input, textarea, button { font-family: inherit; font-size: 14px; }
   </div>
 </div>
 
-<div id="mobile-overlay" onclick="toggleSidebar()"></div>
 <div id="toast"></div>
+<div class="modal-bg" id="modal" onclick="this.classList.remove('on')"><div class="modal-bd" onclick="event.stopPropagation()"></div></div>
 
 <script>
 // ======== State ========
-let PAT = '', OWNER = '', REPO = '', BRANCH = 'master', POSTS_PATH = 'content/posts';
-let posts = [], currentPost = null, images = [], currentView = 'dashboard';
-let imgMaxWidth = 1600, imgQuality = 0.82, imgAutoWebp = true;
+let P={},O,R,B='master',PP='content/posts';
+let posts=[],imgs=[],curP=null,cv='dashboard';
+const I=(id)=>document.getElementById(id);
 
-const saved = localStorage.getItem('blog_admin');
-if (saved) {
-  try {
-    const s = JSON.parse(saved);
-    PAT = s.pat || ''; OWNER = s.owner || 'q3190872366'; REPO = s.repo || 'amigo-blog';
-    BRANCH = s.branch || 'main'; if (BRANCH === 'main') BRANCH = 'master'; POSTS_PATH = s.postsPath || 'content/posts';
-    if (PAT) document.getElementById('pat-input').value = PAT;
-    document.getElementById('owner-input').value = OWNER;
-    document.getElementById('repo-input').value = REPO;
-    if (s.theme) document.documentElement.setAttribute('data-theme', s.theme);
-  } catch(e) {}
+function loadState(){
+  const s=localStorage.getItem('blog_adm2');
+  if(!s)return;
+  try{const d=JSON.parse(s);P=d.pat||'';O=d.owner||'q3190872366';R=d.repo||'amigo-blog';B=d.branch||'main';if(B==='main')B='master';PP=d.path||'content/posts';if(d.dark)document.documentElement.classList.add('dark')}catch(_){}
 }
+loadState();
+const saved=localStorage.getItem('blog_adm2');
+if(saved&&P){try{if(P)I('li-token').value=P}catch(_){}}
 
-function login() {
-  PAT = document.getElementById('pat-input').value.trim();
-  OWNER = document.getElementById('owner-input').value.trim();
-  REPO = document.getElementById('repo-input').value.trim();
-  if (!PAT || !OWNER || !REPO) { toast('请填写完整', 'error'); return; }
-  saveSettings();
-  document.getElementById('login').style.display = 'none';
-  document.getElementById('app').classList.add('active');
-  loadDashboard();
+// ======== Login ========
+function doLogin(){
+  P=I('li-token').value.trim();O=I('li-owner').value.trim();R=I('li-repo').value.trim();
+  if(!P||!O||!R){toast('请填写完整','err');return}
+  localStorage.setItem('blog_adm2',JSON.stringify({pat:P,owner:O,repo:R,branch:B,path:PP,dark:document.documentElement.classList.contains('dark')}));
+  I('login').style.display='none';I('app').classList.add('app-open');
+  loadDash();
 }
-
-function logout() {
-  localStorage.removeItem('blog_admin');
-  location.reload();
+function doLogout(){localStorage.removeItem('blog_adm2');location.reload()}
+function saveConfig(){
+  const t=I('s-token');if(t&&t.value)P=t.value;
+  const r=I('s-repo');if(r&&r.value){const p=r.value.split('/');if(p.length===2){O=p[0];R=p[1]}}
+  const b=I('s-branch');if(b&&b.value)B=b.value;
+  const pp=I('s-path');if(pp&&pp.value)PP=pp.value;
+  localStorage.setItem('blog_adm2',JSON.stringify({pat:P,owner:O,repo:R,branch:B,path:PP,dark:document.documentElement.classList.contains('dark')}));
+  toast('已保存','ok');loadDash();
 }
-
-function saveSettings() {
-  const setPat = document.getElementById('set-pat');
-  if (setPat && setPat.value) PAT = setPat.value;
-  const setRepo = document.getElementById('set-repo');
-  if (setRepo && setRepo.value) {
-    const parts = setRepo.value.split('/');
-    if (parts.length === 2) { OWNER = parts[0]; REPO = parts[1]; }
-  }
-  const setBranch = document.getElementById('set-branch');
-  if (setBranch && setBranch.value) BRANCH = setBranch.value;
-  const setPath = document.getElementById('set-path');
-  if (setPath && setPath.value) POSTS_PATH = setPath.value;
-  localStorage.setItem('blog_admin', JSON.stringify({ pat: PAT, owner: OWNER, repo: REPO, branch: BRANCH, postsPath: POSTS_PATH, theme: document.documentElement.getAttribute('data-theme') || '' }));
-  toast('已保存', 'success');
-  loadDashboard();
-}
-
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  const next = cur === 'dark' ? '' : 'dark';
-  if (next) document.documentElement.setAttribute('data-theme', next);
-  else document.documentElement.removeAttribute('data-theme');
-  saveSettings();
-}
-
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('mobile-overlay').classList.toggle('open');
+function toggleTheme(){
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('blog_adm2',JSON.stringify({pat:P,owner:O,repo:R,branch:B,path:PP,dark:document.documentElement.classList.contains('dark')}));
 }
 
 // ======== GitHub API ========
-function gh(path, opts = {}) {
-  return fetch(`https://api.github.com/repos/${OWNER}/${REPO}${path}`, {
-    ...opts,
-    headers: { 'Authorization': `token ${PAT}`, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json', ...(opts.headers || {}) }
-  }).then(async r => {
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(data.message || `HTTP ${r.status}`);
-    return data;
+function gh(path,opts={}){
+  return fetch('https://api.github.com/repos/'+O+'/'+R+path,{...opts,headers:{Authorization:'token '+P,Accept:'application/vnd.github+json','Content-Type':'application/json',...(opts.headers||{})}}).then(async r=>{
+    const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.message||'HTTP '+r.status);return d;
   });
 }
+function ghp(p){return p.split('/').map(encodeURIComponent).join('/')}
 
-function ghEncodePath(path) {
-  return path.split('/').map(encodeURIComponent).join('/');
+function b64d(raw){
+  try{const b=Uint8Array.from(atob(raw.replace(/\n/g,'')),c=>c.charCodeAt(0));return new TextDecoder('utf-8').decode(b)}catch(e){return atob(raw.replace(/\n/g,''))}
 }
+function b64e(s){const b=new TextEncoder().encode(s);let r='';for(const x of b)r+=String.fromCharCode(x);return btoa(r)}
 
-function decodeBase64UTF8(b64) {
-  try {
-    const bytes = Uint8Array.from(atob(b64.replace(/\n/g, '')), c => c.charCodeAt(0));
-    return new TextDecoder('utf-8').decode(bytes);
-  } catch(e) { return atob(b64.replace(/\n/g, '')); }
-}
-
-function encodeBase64UTF8(str) {
-  const bytes = new TextEncoder().encode(str);
-  let binary = '';
-  for (const b of bytes) binary += String.fromCharCode(b);
-  return btoa(binary);
-}
-
-// ======== Image Processing ========
-async function compressImage(file, maxWidth, quality, asWebp) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      const w = Math.min(img.width, maxWidth);
-      const h = (img.height * w) / img.width;
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(0, 0, w, h);
-      ctx.drawImage(img, 0, 0, w, h);
-      const mime = asWebp ? 'image/webp' : file.type;
-      canvas.toBlob(blob => {
-        const ext = mime === 'image/webp' ? '.webp' :
-                    mime === 'image/png' ? '.png' :
-                    mime === 'image/gif' ? '.gif' : '.jpg';
-        resolve({ blob, ext, original: file.size, compressed: blob.size });
-      }, mime, quality);
-    };
-    img.onerror = reject;
-    img.src = URL.createObjectURL(file);
+// ======== FM parser ========
+function parseFM(raw){
+  const m=raw.match(/^---\n([\s\S]*?)\n---/);if(!m)return{};
+  const fm={};let ck=null;
+  m[1].split('\n').forEach(l=>{
+    const a=l.match(/^\s+-\s+(.*)/);if(a&&ck){fm[ck]=fm[ck]||[];fm[ck].push(a[1].trim().replace(/^['"]|['"]$/g,''));return}
+    const kv=l.match(/^(\w+):\s*(.*)/);if(kv){const v=kv[2].trim();fm[kv[1]]=v==='true'?true:v==='false'?false:v.replace(/^['"]|['"]$/g,'');ck=v===''||v==='[]'?kv[1]:null}
   });
-}
-
-async function uploadImageFromFile(files) {
-  if (!files || !files.length) return;
-  const asWebp = document.getElementById('meta-webp').checked;
-  uploadImages(files, asWebp);
-}
-
-async function uploadImages(files, forceWebp) {
-  if (!files || !files.length) return;
-  const useWebp = forceWebp !== undefined ? forceWebp : (document.getElementById('img-auto-webp')?.checked ?? true);
-  const maxW = parseInt(document.getElementById('img-max-width')?.value) || 1600;
-  const q = (parseInt(document.getElementById('img-quality')?.value) || 82) / 100;
-
-  // 新建文章要先保存草稿，否则没有目录存图片（图片管理页可上传到公共目录）
-  let targetDir;
-  if (!currentPost) {
-    if (currentView === 'images') {
-      targetDir = 'static/posts/images';
-    } else {
-      toast('请先保存草稿再上传图片', 'error');
-      return;
-    }
-  } else {
-    targetDir = `${POSTS_PATH}/${currentPost.name}`;
-  }
-
-  for (const file of files) {
-    try {
-      toast(`处理 ${file.name}...`, 'info');
-      const { blob, ext } = await compressImage(file, maxW, q, useWebp);
-      const baseName = 'img-' + Date.now().toString(36);
-      const filename = `${baseName}-${Date.now()}${ext}`;
-      const reader = new FileReader();
-      const content = await new Promise((res, rej) => {
-        reader.onload = () => res(reader.result.split(',')[1]);
-        reader.onerror = rej;
-        reader.readAsDataURL(blob);
-      });
-      const path = `${targetDir}/${filename}`;
-      await gh(`/contents/${ghEncodePath(path)}`, {
-        method: 'PUT',
-        body: JSON.stringify({ message: `admin: upload ${filename}`, content, branch: BRANCH })
-      });
-      // Insert into editor
-      const md = `![${baseName}](${filename})`;
-      insertAtCursor(md);
-      toast(`已上传 ${filename}`, 'success');
-    } catch(e) {
-      toast('上传失败: ' + e.message, 'error');
-    }
-  }
-  updatePreview();
-  renderImageGrid();
-}
-
-function insertAtCursor(text) {
-  const el = document.getElementById('editor');
-  const start = el.selectionStart, end = el.selectionEnd;
-  el.value = el.value.substring(0, start) + text + el.value.substring(end);
-  el.selectionStart = el.selectionEnd = start + text.length;
-  updatePreview();
-}
-
-// ======== View / Navigation ========
-function switchView(view) {
-  if (currentView === 'content' && view !== 'content') {
-    // hidden already
-  }
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById('editor-view').classList.remove('active');
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const navItem = document.querySelector(`.nav-item[data-view="${view}"]`);
-  if (navItem) navItem.classList.add('active');
-
-  const breadcrumbs = {
-    dashboard: '仪表盘',
-    content: '仪表盘 / 内容管理',
-    images: '仪表盘 / 图片管理',
-    settings: '仪表盘 / 系统设置',
-    editor: '仪表盘 / 内容管理 / 编辑文章'
-  };
-  document.getElementById('breadcrumb').innerHTML = `<span>${breadcrumbs[view].split(' / ').join('</span><span>')}</span>`;
-
-  document.getElementById('view-' + view)?.classList.add('active');
-
-  // Topbar actions
-  const actions = document.getElementById('topbar-actions');
-  if (view === 'content') {
-    actions.innerHTML = '<button class="btn btn-accent" onclick="newPost()">+ 新建文章</button>';
-  } else if (view === 'editor') {
-    actions.innerHTML = '<button class="btn" onclick="switchView(\'content\')">← 返回列表</button>';
-    document.getElementById('editor-view').classList.add('active');
-  } else {
-    actions.innerHTML = '<button class="btn btn-accent" onclick="triggerBuild()">🚀 部署</button>';
-  }
-
-  currentView = view;
-  if (view === 'content') loadPosts();
-  if (view === 'images') loadImages();
-  if (window.innerWidth < 768) toggleSidebar();
-}
-
-// ======== Dashboard ========
-async function loadDashboard() {
-  try {
-    const data = await gh(`/contents/${POSTS_PATH}`);
-    let postCount = 0, draftCount = 0, recentCount = 0;
-    const sevenDaysAgo = Date.now() - 7 * 24 * 3600 * 1000;
-    for (const item of data) {
-      if (item.type === 'dir') {
-        postCount++;
-        try {
-          const file = await gh(`/contents/${ghEncodePath(`${POSTS_PATH}/${item.name}/index.md`)}`);
-          const content = decodeBase64UTF8(file.content);
-          const meta = parseFrontMatter(content);
-          if (meta.draft) draftCount++;
-          if (file.commit?.author?.date && new Date(file.commit.author.date).getTime() > sevenDaysAgo) recentCount++;
-        } catch(e) {}
-      }
-    }
-    document.getElementById('stat-posts').textContent = postCount;
-    document.getElementById('stat-images').textContent = '?';
-    document.getElementById('stat-drafts').textContent = draftCount;
-    document.getElementById('stat-recent').textContent = recentCount;
-    document.getElementById('dist-posts').textContent = postCount;
-    document.getElementById('dist-drafts').textContent = draftCount;
-    document.getElementById('health-pat').className = 'status-pill ok';
-    document.getElementById('health-pat').textContent = '正常';
-    document.getElementById('health-repo').className = 'status-pill ok';
-    document.getElementById('health-repo').textContent = '正常';
-    document.getElementById('health-workflow').className = 'status-pill ok';
-    document.getElementById('health-workflow').textContent = '正常';
-    document.getElementById('health-site').className = 'status-pill ok';
-    document.getElementById('health-site').textContent = '正常';
-  } catch(e) {
-    document.getElementById('stat-posts').textContent = '?';
-    document.getElementById('health-pat').className = 'status-pill error';
-    document.getElementById('health-pat').textContent = '异常';
-    toast('加载仪表盘失败: ' + e.message, 'error');
-  }
-}
-
-// ======== Posts ========
-function parseFrontMatter(raw) {
-  const m = raw.match(/^---\n([\s\S]*?)\n---/);
-  if (!m) return {};
-  const meta = {};
-  let currentKey = null;
-  m[1].split('\n').forEach(line => {
-    const arr = line.match(/^\s+-\s+(.*)/);
-    if (arr && currentKey) {
-      if (!Array.isArray(meta[currentKey])) meta[currentKey] = [];
-      const v = arr[1].trim().replace(/^['"]|['"]$/g, '');
-      meta[currentKey].push(v);
-      return;
-    }
-    const kv = line.match(/^(\w+):\s*(.*)/);
-    if (kv) {
-      const v = kv[2].trim();
-      if (v === 'true') meta[kv[1]] = true;
-      else if (v === 'false') meta[kv[1]] = false;
-      else if (v === '' || v === '[]') { meta[kv[1]] = v === '[]' ? [] : ''; currentKey = kv[1]; }
-      else { meta[kv[1]] = v.replace(/^['"]|['"]$/g, ''); currentKey = kv[1]; }
-    }
-  });
-  return meta;
-}
-
-function resetAll() {
-  currentPost = null;
-  document.getElementById('editor').value = '';
-  document.getElementById('meta-title').value = '';
-  document.getElementById('meta-category').value = '';
-  document.getElementById('meta-tags').value = '';
-  document.getElementById('meta-draft').checked = true;
-  document.getElementById('preview').innerHTML = '';
-}
-
-async function loadPosts() {
-  try {
-    const data = await gh(`/contents/${POSTS_PATH}`);
-    posts = [];
-    for (const item of data) {
-      if (item.type === 'dir') {
-        try {
-          const fileData = await gh(`/contents/${ghEncodePath(`${POSTS_PATH}/${item.name}/index.md`)}`);
-          const content = decodeBase64UTF8(fileData.content);
-          const meta = parseFrontMatter(content);
-          posts.push({
-            name: item.name,
-            title: meta.title || item.name,
-            date: meta.date || '', sha: fileData.sha,
-            draft: meta.draft, category: meta.categories?.[0] || '',
-            tags: meta.tags || [], raw: content
-          });
-        } catch(e) {
-          posts.push({ name: item.name, title: item.name, date: '', sha: null, draft: false, category: '', tags: [], raw: '' });
-        }
-      }
-    }
-    posts.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-    renderContentList();
-  } catch(e) {
-    document.getElementById('post-list').innerHTML = `<div class="empty-state">加载失败: ${e.message}</div>`;
-  }
-}
-
-function renderContentList() {
-  const list = document.getElementById('post-list');
-  const q = (document.getElementById('search-input').value || '').toLowerCase();
-  const filter = document.getElementById('filter-status').value;
-  const filtered = posts.filter(p => {
-    if (q && !p.title.toLowerCase().includes(q) && !p.name.toLowerCase().includes(q)) return false;
-    if (filter === 'draft' && !p.draft) return false;
-    if (filter === 'published' && p.draft) return false;
-    return true;
-  });
-  if (!filtered.length) { list.innerHTML = '<div class="empty-state">没有文章</div>'; return; }
-  list.innerHTML = filtered.map(p => `
-    <div class="post-item" onclick="editPost('${p.name}')">
-      <div>
-        <div class="title">${escapeHtml(p.title)}</div>
-        <div class="meta">${p.date ? p.date.slice(0,10) : ''} ${p.category ? '· ' + p.category : ''} ${p.tags?.length ? '· ' + p.tags.join(', ') : ''}</div>
-      </div>
-      <span class="badge ${p.draft ? '' : 'published'}">${p.draft ? '草稿' : '已发布'}</span>
-    </div>
-  `).join('');
-}
-
-function escapeHtml(s) {
-  return (s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-}
-
-function newPost() {
-  resetAll();
-  document.getElementById('meta-title').value = '新文章';
-  document.getElementById('editor').value = '# 新文章\n\n开始写作...';
-  switchView('editor');
-  updatePreview();
-}
-
-function editPost(slug) {
-  const post = posts.find(p => p.name === slug);
-  if (!post) return;
-  currentPost = post;
-  document.getElementById('editor').value = (post.raw.match(/^---\n[\s\S]*?\n---\n/) ? post.raw.replace(/^---\n[\s\S]*?\n---\n/, '') : post.raw);
-  document.getElementById('meta-title').value = post.title;
-  document.getElementById('meta-category').value = post.category;
-  document.getElementById('meta-tags').value = (post.tags || []).join(',');
-  document.getElementById('meta-draft').checked = post.draft;
-  switchView('editor');
-  updatePreview();
-}
-
-function updatePreview() {
-  document.getElementById('preview').innerHTML = marked.parse(document.getElementById('editor').value || '');
-}
-
-function buildFrontMatter() {
-  const title = document.getElementById('meta-title').value || '未命名';
-  const draft = document.getElementById('meta-draft').checked;
-  const category = document.getElementById('meta-category').value.trim();
-  const tags = document.getElementById('meta-tags').value.split(',').map(t => t.trim()).filter(Boolean);
-  const date = currentPost ? (parseFrontMatter(currentPost.raw).date || new Date().toISOString()) : new Date().toISOString();
-  const lines = ['---', `title: "${title}"`, `date: "${date}"`, `draft: ${draft ? 'true' : 'false'}`, `author: ''`, `summary: ''`, `cover: ''`, `comments: true`];
-  lines.push(category ? `categories:\n  - "${category}"` : 'categories: []');
-  if (tags.length) { lines.push('tags:'); tags.forEach(t => lines.push(`  - "${t}"`)); }
-  else lines.push('tags: []');
-  lines.push('---', '');
-  return lines.join('\n');
-}
-
-async function savePost(publish) {
-  const body = document.getElementById('editor').value;
-  const fullContent = buildFrontMatter() + body;
-  const title = document.getElementById('meta-title').value || '未命名';
-  const isNew = !currentPost;
-  if (publish) document.getElementById('meta-draft').checked = false;
-
-  try {
-    let slug, path, sha = null;
-    if (isNew) {
-      const now = new Date();
-      slug = `${now.toISOString().slice(0,10)}-${now.toISOString().slice(11,19).replace(/:/g,'')}`;
-      path = `${POSTS_PATH}/${slug}/index.md`;
-    } else {
-      slug = currentPost.name;
-      path = `${POSTS_PATH}/${slug}/index.md`;
-      sha = currentPost.sha;
-    }
-    const encodedPath = ghEncodePath(path);
-    const putBody = { message: `admin: ${publish ? 'publish' : 'update'} ${title}`, content: encodeBase64UTF8(fullContent), branch: BRANCH };
-    if (sha) putBody.sha = sha;
-    await gh(`/contents/${encodedPath}`, { method: 'PUT', body: JSON.stringify(putBody) });
-    toast(publish ? '已发布' : '已保存', 'success');
-    await loadPosts();
-    const idx = posts.findIndex(p => p.name === slug);
-    if (idx >= 0) currentPost = posts[idx];
-    if (publish) setTimeout(() => triggerBuild(), 500);
-  } catch(e) {
-    toast('保存失败: ' + e.message, 'error');
-  }
-}
-
-async function deletePost() {
-  if (!currentPost) return;
-  if (!confirm(`确定删除「${currentPost.title}」？`)) return;
-  try {
-    // Delete all files in the directory
-    const dirData = await gh(`/contents/${POSTS_PATH}/${currentPost.name}`);
-    for (const f of dirData) {
-      if (f.sha) {
-        await gh(`/contents/${ghEncodePath(f.path)}`, { method: 'DELETE', body: JSON.stringify({ message: `admin: delete ${f.name}`, sha: f.sha, branch: BRANCH }) });
-      }
-    }
-    toast('已删除', 'success');
-    await loadPosts();
-    switchView('content');
-  } catch(e) {
-    toast('删除失败: ' + e.message, 'error');
-  }
-}
-
-// ======== Editor Toolbar ========
-function format(type) {
-  const el = document.getElementById('editor');
-  const start = el.selectionStart, end = el.selectionEnd;
-  const sel = el.value.substring(start, end);
-  let before = el.value.substring(0, start), after = el.value.substring(end);
-  let newSel = sel, inserted = sel;
-  const wrap = (ch) => { before += ch; after = ch + after; newSel = sel; };
-  const wrapPair = (l, r) => { before += l; after = r + after; inserted = l + sel + r; };
-  const lineStart = before.lastIndexOf('\n') + 1;
-  switch (type) {
-    case 'bold': wrapPair('**', '**'); break;
-    case 'italic': wrapPair('*', '*'); break;
-    case 'strikethrough': wrapPair('~~', '~~'); break;
-    case 'code': wrapPair('`', '`'); break;
-    case 'h1': before = before.substring(0, lineStart) + '# ' + before.substring(lineStart); break;
-    case 'h2': before = before.substring(0, lineStart) + '## ' + before.substring(lineStart); break;
-    case 'h3': before = before.substring(0, lineStart) + '### ' + before.substring(lineStart); break;
-    case 'ul': before = before.substring(0, lineStart) + '- ' + before.substring(lineStart); break;
-    case 'ol': before = before.substring(0, lineStart) + '1. ' + before.substring(lineStart); break;
-    case 'todo': before = before.substring(0, lineStart) + '- [ ] ' + before.substring(lineStart); break;
-    case 'quote': before = before.substring(0, lineStart) + '> ' + before.substring(lineStart); break;
-    case 'link': { const url = prompt('URL:'); if (url) { before += '['; after = `](${url})` + after; inserted = sel ? `[${sel}](${url})` : `[text](${url})`; } break; }
-    case 'codeblock': { before += '```\n'; after = `\n\`\`\`` + after; break; }
-  }
-  el.value = before + (inserted !== sel ? inserted : (sel || '')) + after;
-  el.focus();
-  updatePreview();
-}
-
-// ======== Images ========
-async function loadImages() {
-  document.getElementById('image-grid').innerHTML = '<div class="empty-state">扫描中...</div>';
-  try {
-    const posts = await gh(`/contents/${POSTS_PATH}`);
-    let allImages = [];
-    for (const post of posts) {
-      if (post.type === 'dir') {
-        try {
-          const files = await gh(`/contents/${POSTS_PATH}/${post.name}`);
-          for (const f of files) {
-            if (/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(f.name)) {
-              allImages.push({ name: f.name, path: f.path, sha: f.sha, url: f.download_url, post: post.name });
-            }
-          }
-        } catch(e) {}
-      }
-    }
-    images = allImages;
-    renderImageGrid();
-  } catch(e) {
-    document.getElementById('image-grid').innerHTML = `<div class="empty-state">加载失败: ${e.message}</div>`;
-  }
-}
-
-function renderImageGrid() {
-  const grid = document.getElementById('image-grid');
-  if (!images.length) { grid.innerHTML = '<div class="empty-state">还没有图片</div>'; return; }
-  grid.innerHTML = images.map(img => `
-    <div class="image-card">
-      <img src="${img.url}" alt="${img.name}" loading="lazy">
-      <div class="img-meta">${img.name}</div>
-      <div class="img-actions">
-        <button onclick="copyImageUrl('${img.url}')">复制</button>
-        <button onclick="deleteImage('${img.path}','${img.sha}')">删除</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function copyImageUrl(url) {
-  navigator.clipboard.writeText(url);
-  toast('链接已复制', 'success');
-}
-
-async function deleteImage(path, sha) {
-  if (!confirm('删除图片？')) return;
-  try {
-    await gh(`/contents/${ghEncodePath(path)}`, { method: 'DELETE', body: JSON.stringify({ message: 'admin: delete image', sha, branch: BRANCH }) });
-    toast('已删除', 'success');
-    loadImages();
-  } catch(e) { toast('删除失败: ' + e.message, 'error'); }
-}
-
-// ======== Build ========
-async function triggerBuild() {
-  try {
-    await gh(`/actions/workflows/deploy.yml/dispatches`, { method: 'POST', body: JSON.stringify({ ref: BRANCH }) });
-    toast('已触发部署', 'success');
-  } catch(e) { toast('触发失败: ' + e.message, 'error'); }
+  return fm;
 }
 
 // ======== Toast ========
-let toastTimer;
-function toast(msg, type) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = type;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.className = '', 3000);
+let _to;
+function toast(m,t){const e=I('toast');e.textContent=m;e.className=t;clearTimeout(_to);_to=setTimeout(()=>e.className='',2500)}
+
+// ======== Navigation ========
+function goView(v){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
+  I('ed-view').classList.remove('on');
+  I('v-'+v)?.classList.add('on');
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('on'));
+  document.querySelector('.nav-item[data-v="'+v+'"]')?.classList.add('on');
+  cv=v;
+  I('bc').innerHTML={'dashboard':'仪表盘','posts':'仪表盘 / 文章管理','media':'仪表盘 / 素材管理','settings':'仪表盘 / 设置','editor':'仪表盘 / 文章管理 / 编辑'}[v].split(' / ').map(s=>'<span>'+s+'</span>').join('');
+  if(v==='posts')loadPosts();
+  if(v==='media')loadImgs();
+  if(v==='dashboard')loadDash();
+  if(window.innerWidth<768)I('sidebar').classList.remove('open');
+  // topbar actions
+  if(v==='editor')I('top-actions').innerHTML='<button class="btn btn-sm" onclick="goView(\'posts\')">← 返回</button>';
+  else I('top-actions').innerHTML='<button class="btn btn-p btn-sm" onclick="doDeploy()">🚀 部署</button>';
+}
+
+// ======== Dashboard ========
+async function loadDash(){
+  try{
+    const data=await gh('/contents/'+PP);let p=0,d=0,rc=0,i=0;
+    const w=new Date(Date.now()-7*86400000);
+    for(const it of data){if(it.type!=='dir')continue;p++;try{
+      const f=await gh('/contents/'+ghp(PP+'/'+it.name+'/index.md'));
+      const fm=parseFM(b64d(f.content));
+      if(fm.draft)d++;
+      if(f.commit?.author?.date&&new Date(f.commit.author.date)>w)rc++;
+      try{const ims=await gh('/contents/'+PP+'/'+it.name);ims.forEach(x=>{if(/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(x.name))i++})}catch(_){}
+    }catch(_){}}
+    I('s-posts').textContent=p;I('s-imgs').textContent=i;I('s-drafts').textContent=d;I('s-recent').textContent=rc;
+    sPill('h-api','ok','正常');sPill('h-repo','ok','正常');sPill('h-wf','ok','正常');sPill('h-site','ok','正常');
+  }catch(e){toast('加载失败: '+e.message,'err')}
+}
+function sPill(id,c,t){const e=I(id);e.className='pill '+c;e.textContent=t}
+
+// ======== Posts ========
+async function loadPosts(){
+  try{
+    const data=await gh('/contents/'+PP);posts=[];
+    for(const it of data){if(it.type!=='dir')continue;try{
+      const f=await gh('/contents/'+ghp(PP+'/'+it.name+'/index.md'));
+      const raw=b64d(f.content),fm=parseFM(raw);
+      posts.push({slug:it.name,title:fm.title||it.name,date:fm.date||'',sha:f.sha,draft:fm.draft,cats:fm.categories||[],tags:fm.tags||[],raw});
+    }catch(_){posts.push({slug:it.name,title:it.name,date:'',sha:null,draft:false,cats:[],tags:[],raw:''})}}
+    posts.sort((a,b)=>(b.date||'').localeCompare(a.date||''));renderPosts();
+  }catch(e){I('p-list').innerHTML='<div class="empty">加载失败: '+e.message+'</div>'}
+}
+function renderPosts(){
+  const q=(I('p-search').value||'').toLowerCase(),f=I('p-filter').value;
+  const fl=posts.filter(p=>{
+    if(q&&!p.title.toLowerCase().includes(q)&&!p.slug.toLowerCase().includes(q))return 0;
+    if(f==='draft'&&!p.draft)return 0;if(f==='pub'&&p.draft)return 0;return 1;
+  });
+  I('p-list').innerHTML=fl.length?fl.map(p=>'<div class="pitem" onclick="editPost(\''+p.slug+'\')"><div><div class="title">'+esc(p.title)+'</div><div class="meta">'+(p.date?p.date.slice(0,10):'')+(p.cats.length?' · '+p.cats.join(', '):'')+(p.tags.length?' · '+p.tags.join(', '):'')+'</div></div><span class="badge '+(p.draft?'draft':'pub')+'">'+(p.draft?'草稿':'已发布')+'</span></div>').join(''):'<div class="empty">没有文章</div>';
+}
+function esc(s){return(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+function newPost(){curP=null;I('editor').value='';I('em-title').value='新文章';I('em-draft').checked=true;I('preview').innerHTML='';goView('editor')}
+function editPost(slug){const p=posts.find(x=>x.slug===slug);if(!p)return;curP=p;I('editor').value=(p.raw.match(/^---\n[\s\S]*?\n---\n/)?p.raw.replace(/^---\n[\s\S]*?\n---\n/,''):p.raw);I('em-title').value=p.title;I('em-cat').value=p.cats.join(', ');I('em-tags').value=(p.tags||[]).join(',');I('em-draft').checked=p.draft;goView('editor');upPreview()}
+function upPreview(){I('preview').innerHTML=marked.parse(I('editor').value||'')}
+
+function bFM(){
+  const t=I('em-title').value||'未命名',d=I('em-draft').checked;
+  const cat=I('em-cat').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const tags=I('em-tags').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const date=curP?(parseFM(curP.raw).date||new Date().toISOString()):new Date().toISOString();
+  let l=['---','title: "'+t+'"','date: "'+date+'"','draft: '+(d?'true':'false'),'author: \'\'','summary: \'\'','cover: \'\'','comments: true'];
+  l.push(cat.length?'categories:\n'+cat.map(c=>'  - "'+c+'"').join('\n'):'categories: []');
+  l.push(tags.length?'tags:\n'+tags.map(c=>'  - "'+c+'"').join('\n'):'tags: []');
+  l.push('---','');return l.join('\n');
+}
+
+async function savePost(pub){
+  const body=I('editor').value,all=bFM()+body;
+  const title=I('em-title').value||'未命名',isNew=!curP;
+  if(pub)I('em-draft').checked=false;
+  try{
+    let slug,path,sha=null;
+    if(isNew){const n=new Date();slug=n.toISOString().slice(0,10)+'-'+n.toISOString().slice(11,19).replace(/:/g,'');path=PP+'/'+slug+'/index.md'}
+    else{slug=curP.slug;path=PP+'/'+slug+'/index.md';sha=curP.sha}
+    const pb={message:'admin: '+(pub?'publish':'update')+' '+title,content:b64e(all),branch:B};
+    if(sha)pb.sha=sha;
+    await gh('/contents/'+ghp(path),{method:'PUT',body:JSON.stringify(pb)});
+    toast(pub?'已发布':'已保存','ok');await loadPosts();
+    const i=posts.findIndex(p=>p.slug===slug);if(i>=0)curP=posts[i];
+    if(pub)setTimeout(()=>doDeploy(),500);
+  }catch(e){toast('保存失败: '+e.message,'err')}
+}
+
+async function delPost(){if(!curP)return;if(!confirm('确定删除「'+curP.title+'」？全部图片也会被删除'))return;try{const dir=await gh('/contents/'+PP+'/'+curP.slug);for(const f of dir){if(f.sha)await gh('/contents/'+ghp(f.path),{method:'DELETE',body:JSON.stringify({message:'admin: delete '+f.name,sha:f.sha,branch:B})})}toast('已删除','ok');loadPosts();goView('posts')}catch(e){toast('删除失败: '+e.message,'err')}}
+
+// ======== Editor toolbar ========
+function fmt(type){
+  const e=I('editor'),s=e.selectionStart,ed=e.selectionEnd,sel=e.value.substring(s,ed);
+  let b=e.value.substring(0,s),a=e.value.substring(ed);
+  const ls=b.lastIndexOf('\n')+1;
+  switch(type){
+    case'bold':b+='**';a='**'+a;break;case'italic':b+='*';a='*'+a;break;case'strike':b+='~~';a='~~'+a;break;
+    case'code':b+='`';a='`'+a;break;
+    case'h2':b=b.substring(0,ls)+'## '+b.substring(ls);break;case'h3':b=b.substring(0,ls)+'### '+b.substring(ls);break;
+    case'ul':b=b.substring(0,ls)+'- '+b.substring(ls);break;case'ol':b=b.substring(0,ls)+'1. '+b.substring(ls);break;
+    case'task':b=b.substring(0,ls)+'- [ ] '+b.substring(ls);break;case'quote':b=b.substring(0,ls)+'> '+b.substring(ls);break;
+    case'link':{const u=prompt('URL:');if(u){b+='['+(sel||'link')+'](';a=')'+a}}break;
+    case'pre':b+='```\n';a='\n```'+a;break;
+  }
+  e.value=b+(sel||'')+a;e.focus();upPreview();
+}
+
+// ======== Image processing ========
+function compImg(file,mw,q,webp){
+  return new Promise((ok,no)=>{
+    const img=new Image();img.onload=()=>{
+      const w=Math.min(img.width,mw),h=img.height*w/img.width;
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);
+      c.toBlob(b=>{const m=webp?'image/webp':file.type;const ext=m==='image/webp'?'.webp':m==='image/png'?'.png':'.jpg';ok({blob:b,ext,orig:file.size,comp:b.size})},webp?'image/webp':file.type,q/100);
+    };img.onerror=no;img.src=URL.createObjectURL(file);
+  });
+}
+
+function upImg(files){if(!files||!files.length)return;const w=I('em-webp').checked;upImgs(files,w)}
+async function upImgs(files,fw){
+  if(!files||!files.length)return;
+  const webp=fw!==undefined?fw:(I('img-webp')?.checked??true);
+  const mw=parseInt(I('img-mw')?.value)||1600,q=parseInt(I('img-q')?.value)||82;
+  // determine target dir
+  let dir;
+  if(!curP&&cv==='media')dir='static/posts/images';
+  else if(!curP){toast('请先保存草稿再上传','err');return}
+  else dir=PP+'/'+curP.slug;
+  for(const file of files){try{
+    toast('处理 '+file.name+'...','info');
+    const{blob,ext}=await compImg(file,mw,q,webp);
+    const bn='img-'+Date.now().toString(36)+ext;
+    const rdr=new FileReader();
+    const content=await new Promise((ok,no)=>{rdr.onload=()=>ok(rdr.result.split(',')[1]);rdr.onerror=no;rdr.readAsDataURL(blob)});
+    const path=dir+'/'+bn;
+    await gh('/contents/'+ghp(path),{method:'PUT',body:JSON.stringify({message:'admin: upload '+bn,content,branch:B})});
+    if(curP){const md='!['+bn+']('+bn+')';insAt(md);upPreview()}
+    toast('已上传 '+bn,'ok');
+  }catch(e){toast('上传失败: '+e.message,'err')}}
+  if(cv==='media')loadImgs();
+}
+function insAt(t){const e=I('editor'),s=e.selectionStart,ed=e.selectionEnd;e.value=e.value.substring(0,s)+t+e.value.substring(ed);e.selectionStart=e.selectionEnd=s+t.length}
+
+// ======== Media ========
+async function loadImgs(){
+  I('img-grid').innerHTML='<div class="empty">扫描中...</div>';imgs=[];
+  try{const ps=await gh('/contents/'+PP);
+    for(const p of ps){if(p.type!=='dir')continue;try{const fs=await gh('/contents/'+PP+'/'+p.name);for(const f of fs){if(/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(f.name))imgs.push({name:f.name,path:f.path,sha:f.sha,url:f.download_url,slug:p.name})}}catch(_){}}
+    // also static/posts/images
+    try{const fs=await gh('/contents/static/posts/images');for(const f of fs){if(/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(f.name))imgs.push({name:f.name,path:f.path,sha:f.sha,url:f.download_url,slug:'公共'})}}catch(_){}
+    renderImgs();
+  }catch(e){I('img-grid').innerHTML='<div class="empty">加载失败: '+e.message+'</div>'}
+}
+function renderImgs(){
+  I('img-grid').innerHTML=imgs.length?imgs.map(x=>'<div class="img-card"><img src="'+x.url+'" alt="'+esc(x.name)+'" loading="lazy"><div class="img-acts"><button onclick="cpyUrl(\''+x.url+'\')">复制</button><button onclick="delImg(\''+x.path+'\',\''+x.sha+'\')">删除</button></div><div class="img-info"><span>'+esc(x.name)+'</span><span>'+esc(x.slug)+'</span></div></div>').join(''):'<div class="empty">还没有图片</div>';
+}
+function cpyUrl(u){navigator.clipboard.writeText(u);toast('已复制','ok')}
+async function delImg(p,sha){if(!confirm('删除？'))return;try{await gh('/contents/'+ghp(p),{method:'DELETE',body:JSON.stringify({message:'admin: delete image',sha,branch:B})});toast('已删除','ok');loadImgs()}catch(e){toast('删除失败: '+e.message,'err')}}
+
+// ======== Deploy ========
+async function doDeploy(){
+  try{await gh('/actions/workflows/deploy.yml/dispatches',{method:'POST',body:JSON.stringify({ref:B})});toast('已触发部署','ok')}
+  catch(e){toast('触发失败: '+e.message,'err')}
 }
 
 // ======== Drag & Drop ========
-['dragover', 'dragenter'].forEach(ev => {
-  document.body.addEventListener(ev, e => {
-    if (e.target.closest('.upload-zone')) {
-      e.preventDefault();
-      e.target.closest('.upload-zone').classList.add('dragover');
-    }
-  });
-});
-['dragleave', 'drop'].forEach(ev => {
-  document.body.addEventListener(ev, e => {
-    if (e.target.closest('.upload-zone')) {
-      e.target.closest('.upload-zone').classList.remove('dragover');
-    }
-  });
-});
-document.body.addEventListener('drop', e => {
-  const zone = e.target.closest('.upload-zone');
-  if (zone && e.dataTransfer.files.length) {
-    e.preventDefault();
-    uploadImages(e.dataTransfer.files);
-  }
-});
+['dragover','dragenter'].forEach(ev=>document.body.addEventListener(ev,e=>{const z=e.target.closest('.upload-zone');if(z){e.preventDefault();z.classList.add('drag')}}));
+['dragleave','drop'].forEach(ev=>document.body.addEventListener(ev,e=>{const z=e.target.closest('.upload-zone');if(z)z.classList.remove('drag')}));
+document.body.addEventListener('drop',e=>{const z=e.target.closest('.upload-zone');if(z&&e.dataTransfer.files.length){e.preventDefault();upImgs(e.dataTransfer.files)}});
 
-// Keyboard
-document.addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); if (currentView === 'editor') savePost(false); }
-});
+// ======== Keyboard ========
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();if(cv==='editor')savePost(false)}});
 </script>
 </body>
 </html>
