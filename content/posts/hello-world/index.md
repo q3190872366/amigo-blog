@@ -1,6 +1,6 @@
 ---
 title: "欢迎使用 Amigo 主题"
-date: 2026-08-04T00:00:00+08:00
+date: 2026-08-03T00:00:00+08:00
 author: "Amigo"
 draft: false
 comments: true
