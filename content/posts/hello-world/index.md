@@ -1,8 +1,9 @@
 ---
 title: "欢迎使用 Amigo 主题"
-date: 2026-02-15T12:00:00+08:00
+date: 2026-08-04T00:00:00+08:00
 author: "Amigo"
-location: "深圳 · 腾讯大厦"
+draft: false
+comments: true
 ---
 
 这是您的第一条动态！Amigo 是一款深度还原微信朋友圈体验的 Hugo 主题。
