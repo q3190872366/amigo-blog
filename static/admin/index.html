@@ -2,151 +2,47 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
 <title>博客管理后台</title>
-<script src="https://cdn.jsdelivr.net/npm/marked@11/marked.min.js"></script>
-<style>
-:root{--b:#f5f2eb;--c:#fff;--t:#1a1a1a;--m:#8b8b8b;--a:#6366f1;--ah:#4f46e5;--e:#e8e4dc;--r:#ef4444;--rb:#fef2f2;--g:#22c55e;--gb:#f0fdf4;--o:#f59e0b;--ob:#fffbeb;--sb:#1e1e2e;--st:#cdd6f4;--sa:#313244;--sh:#27273a}
-.dark{--b:#11111b;--c:#1e1e2e;--t:#cdd6f4;--m:#6c7086;--a:#cba6f7;--ah:#b4befe;--e:#313244;--sb:#0f0f1a}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--b);color:var(--t);height:100dvh;overflow:hidden}
-input,textarea,select,button{font-family:inherit;font-size:14px;outline:none}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--e);border-radius:3px}
-/* Login */
-#login{display:flex;align-items:center;justify-content:center;height:100dvh;background:var(--b)}
-.login-card{background:var(--c);border-radius:16px;padding:40px 32px;width:380px;max-width:90vw;box-shadow:0 4px 24px rgba(0,0,0,.08);text-align:center}
-.login-card h1{font-size:22px;margin-bottom:4px}.login-card p{color:var(--m);font-size:13px;margin-bottom:24px}
-.login-card .field{margin-bottom:14px;text-align:left}
-.login-card label{font-size:12px;color:var(--m);display:block;margin-bottom:4px}
-.login-card input{width:100%;padding:10px 14px;border:1px solid var(--e);border-radius:8px;background:var(--b);color:var(--t);font-size:14px;transition:border .2s}
-.login-card input:focus{border-color:var(--a)}
-.login-card .hint{font-size:11px;color:var(--m);margin-top:16px;line-height:1.5}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:1px solid var(--e);background:var(--c);color:var(--t);cursor:pointer;font-size:13px;transition:all .15s}.btn:hover{background:var(--b)}
-.btn-p{background:var(--a);color:#fff;border-color:var(--a)}.btn-p:hover{background:var(--ah)}
-.btn-d{border-color:var(--r);color:var(--r)}.btn-d:hover{background:var(--rb)}
-.btn-sm{padding:5px 10px;font-size:12px}.btn-xs{padding:3px 8px;font-size:11px}
-/* App */
-#app{display:none;height:100dvh;grid-template-columns:220px 1fr}.app-open{display:grid!important}
-/* Sidebar */
-#sidebar{background:var(--sb);color:var(--st);display:flex;flex-direction:column;grid-row:1}
-.sb-h{padding:20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--sh)}
-.sb-logo{width:32px;height:32px;background:linear-gradient(135deg,var(--a),#a78bfa);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px}
-.sb-h h1{font-size:15px;color:#fff;font-weight:600}
-.sb-nav{flex:1;overflow-y:auto;padding:8px 0}
-.nav-g{margin-bottom:4px}.nav-gt{padding:8px 20px 4px;font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:.5px}
-.nav-item{padding:10px 20px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:10px;border-left:3px solid transparent;transition:all .15s;color:var(--st)}
-.nav-item:hover{background:var(--sh)}
-.nav-item.on{background:var(--sa);border-left-color:var(--a);color:#fff}
-.nav-badge{font-size:10px;background:var(--a);color:#fff;padding:1px 6px;border-radius:8px;margin-left:auto}
-.sb-f{padding:12px 20px;border-top:1px solid var(--sh);font-size:12px;color:var(--m)}
-.sb-f a{cursor:pointer;display:block;padding:4px 0;transition:color .15s}.sb-f a:hover{color:var(--t)}
-/* Main */
-#main{display:flex;flex-direction:column;overflow:hidden;background:var(--b)}
-#topbar{background:var(--c);padding:12px 24px;border-bottom:1px solid var(--e);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
-.bc{display:flex;gap:4px;color:var(--m);font-size:12px}.bc span:last-child{color:var(--t);font-weight:500}
-.top-actions{display:flex;gap:8px;align-items:center}
-.menu-btn{display:none;background:none;border:none;font-size:20px;cursor:pointer;color:var(--t);padding:4px}
-#content{flex:1;overflow-y:auto;padding:24px}.view{display:none}.view.on{display:block}
-/* Dashboard */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
-.stat-card{background:var(--c);border-radius:12px;padding:20px;border:1px solid var(--e);display:flex;align-items:center;gap:14px}
-.stat-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-.stat-icon.c1{background:var(--gb);color:var(--g)}.stat-icon.c2{background:#eff6ff;color:#3b82f6}
-.stat-icon.c3{background:var(--ob);color:var(--o)}.stat-icon.c4{background:var(--rb);color:var(--r)}
-.stat-val{font-size:22px;font-weight:700;line-height:1.2}.stat-lbl{font-size:11px;color:var(--m)}
-.panel{background:var(--c);border-radius:12px;border:1px solid var(--e);margin-bottom:16px}.panel-h{padding:14px 18px;border-bottom:1px solid var(--e);display:flex;justify-content:space-between;align-items:center}
-.panel-t{font-size:14px;font-weight:600}.panel-b{padding:14px 18px}
-.h-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--e)}.h-row:last-child{border-bottom:none}
-.pill{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500}
-.pill.ok{background:var(--gb);color:var(--g)}.pill.err{background:var(--rb);color:var(--r)}.pill.warn{background:var(--ob);color:var(--o)}
-/* Posts */
-.tb{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}.tb input{flex:1;min-width:160px;padding:8px 12px;border:1px solid var(--e);border-radius:8px;background:var(--c);color:var(--t)}.tb select{padding:8px 12px;border:1px solid var(--e);border-radius:8px;background:var(--c);color:var(--t)}
-.plist{border-radius:12px;overflow:hidden;border:1px solid var(--e)}
-.pitem{padding:14px 18px;border-bottom:1px solid var(--e);display:flex;justify-content:space-between;align-items:center;cursor:pointer;background:var(--c);transition:background .1s}.pitem:hover{background:var(--b)}
-.pitem:last-child{border-bottom:none}.pitem .title{font-weight:500;font-size:14px}.pitem .meta{font-size:11px;color:var(--m);margin-top:3px}
-.pitem .badge{padding:2px 8px;border-radius:10px;font-size:10px}.badge.pub{background:var(--gb);color:var(--g)}.badge.draft{background:var(--ob);color:var(--o)}
-.empty{text-align:center;padding:48px 20px;color:var(--m);font-size:13px}
-/* Editor */
-#ed-view{display:none;flex-direction:column;height:100%}#ed-view.on{display:flex}
-.ed-tb{display:flex;gap:3px;padding:6px 10px;background:var(--c);border:1px solid var(--e);border-radius:8px 8px 0 0;flex-wrap:wrap;overflow-x:auto}
-.ed-tb button{padding:5px 9px;border:none;background:transparent;cursor:pointer;border-radius:4px;color:var(--t);font-size:13px;white-space:nowrap}.ed-tb button:hover{background:var(--b)}
-.ed-tb .sep{width:1px;background:var(--e);margin:3px 4px}
-.ed-body{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--e);border:1px solid var(--e);border-top:none;border-radius:0 0 8px 8px;overflow:hidden}
-.ed-body textarea{border:none;resize:none;padding:16px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:13px;line-height:1.7;background:var(--c);color:var(--t)}
-.ed-body #preview{padding:16px;overflow-y:auto;line-height:1.7;background:var(--c)}
-.ed-body #preview img{max-width:100%;border-radius:6px}.ed-body #preview h1{font-size:20px;margin:12px 0}.ed-body #preview h2{font-size:17px;margin:10px 0}
-.ed-body #preview h3{font-size:15px;margin:9px 0}.ed-body #preview p{margin:7px 0}
-.ed-body #preview code{background:var(--b);padding:2px 6px;border-radius:3px;font-size:12px}
-.ed-body #preview pre{background:var(--b);padding:12px;border-radius:6px;overflow-x:auto}
-.ed-meta{display:flex;gap:10px;flex-wrap:wrap;padding:10px 14px;background:var(--c);border:1px solid var(--e);border-top:none;border-radius:0 0 8px 8px;align-items:center}
-.ed-meta input,.ed-meta select{padding:6px 10px;border:1px solid var(--e);border-radius:6px;background:var(--b);color:var(--t)}
-.ed-meta label{font-size:11px;color:var(--m)}.ed-meta label.sw{display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;color:var(--t)}
-/* Media */
-.upload-zone{border:2px dashed var(--e);border-radius:12px;padding:36px;text-align:center;cursor:pointer;background:var(--c);margin-bottom:16px;transition:all .2s}
-.upload-zone:hover,.upload-zone.drag{border-color:var(--a);background:rgba(99,102,241,.04)}
-.upload-zone .ic{font-size:32px;color:var(--m);margin-bottom:8px}
-.up-opts{display:flex;gap:14px;justify-content:center;margin-top:10px;font-size:12px;color:var(--m);flex-wrap:wrap}
-.up-opts label{display:flex;align-items:center;gap:4px;cursor:pointer}
-.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-.img-card{background:var(--c);border-radius:8px;overflow:hidden;border:1px solid var(--e);position:relative}
-.img-card img{width:100%;height:110px;object-fit:cover;display:block}
-.img-info{padding:6px 8px;font-size:10px;color:var(--m);display:flex;justify-content:space-between}
-.img-acts{position:absolute;top:5px;right:5px;display:none;gap:3px}.img-card:hover .img-acts{display:flex}
-.img-acts button{padding:2px 6px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px}
-/* Settings */
-.set-form{max-width:560px}.set-form .field{margin-bottom:14px}
-.set-form label{display:block;font-size:12px;color:var(--m);margin-bottom:5px}
-.set-form input,.set-form textarea{width:100%;padding:9px 12px;border:1px solid var(--e);border-radius:8px;background:var(--b);color:var(--t);font-size:13px}
-.set-form textarea{resize:vertical;min-height:80px;font-family:monospace}
-/* Toast */
-#toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:8px;font-size:13px;z-index:999;display:none;max-width:90vw;box-shadow:0 4px 12px rgba(0,0,0,.1);animation:slideUp .25s ease}
-#toast.ok{display:block;background:var(--gb);color:var(--g);border:1px solid var(--g)}
-#toast.err{display:block;background:var(--rb);color:var(--r);border:1px solid var(--r)}
-#toast.info{display:block;background:var(--c);color:var(--t);border:1px solid var(--a)}
-@keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-/* Modal */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center}
-.modal-bg.on{display:flex}.modal-bd{background:var(--c);border-radius:12px;padding:24px;max-width:90vw;max-height:80vh;overflow-y:auto}
-.modal-bd img{max-width:100%;max-height:70vh;border-radius:6px}
-.modal-bd h2{font-size:16px;margin-bottom:8px}.modal-bd p{font-size:12px;color:var(--m)}
-/* Mobile */
-@media(max-width:768px){
-  #app{grid-template-columns:1fr}#sidebar{position:fixed;left:-240px;top:0;bottom:0;width:220px;z-index:50;transition:left .2s}#sidebar.open{left:0}
-  .menu-btn{display:block}.ed-body{grid-template-columns:1fr}
-  #login .login-card{padding:28px 20px}#content{padding:12px}.stats{grid-template-columns:1fr 1fr}
-}
-</style>
+<script src="head-init.js"><!-- --></script>
+<link rel="stylesheet" href="admin.css">
 </head>
 <body>
 
-<!-- Login -->
-<div id="login"><div class="login-card">
-  <h1>📋 博客管理后台</h1>
-  <p>使用 GitHub PAT 登录，令牌仅在本地保存</p>
-  <div class="field"><label>GitHub Token</label><input type="password" id="li-token" placeholder="ghp_..."><input type="hidden" id="li-owner" value="q3190872366"><input type="hidden" id="li-repo" value="amigo-blog"></div>
-  <button class="btn btn-p" onclick="doLogin()" style="width:100%;justify-content:center;padding:12px">登 录</button>
-  <div class="hint">Token 需要 repo + workflow 权限<br>数据均存储于 GitHub 仓库，云端构建部署</div>
+<div id="login"><div class="login-box">
+  <h1>📋 鹈鹕博客后台</h1>
+  <p>GitHub 驱动的博客管理系统</p>
+  <input type="password" id="li-token" placeholder="GitHub PAT (ghp_...)">
+  <input type="text" id="li-owner" placeholder="用户名" value="q3190872366">
+  <input type="text" id="li-repo" placeholder="仓库名" value="amigo-blog">
+  <button onclick="doLogin()">登 录</button>
+  <div class="login-hint">Token 仅保存在浏览器本地<br>需要 repo + workflow 权限</div>
 </div></div>
 
-<!-- App -->
 <div id="app">
   <aside id="sidebar">
-    <div class="sb-h"><div class="sb-logo">A</div><h1>后台管理</h1></div>
+    <div class="sb-h"><div class="sb-logo">鹈</div><div><h1>鹈鹕博客</h1><small>管理后台</small></div></div>
     <nav class="sb-nav">
-      <div class="nav-g"><div class="nav-item on" data-v="dashboard" onclick="goView('dashboard')">📊 仪表盘</div></div>
+      <div class="nav-g"><div class="nav-item on" data-v="dashboard" onclick="go('dashboard')"><span class="nav-icon">📊</span>仪表盘</div></div>
       <div class="nav-g"><div class="nav-gt">内容管理</div>
-        <div class="nav-item" data-v="posts" onclick="goView('posts')">📝 文章管理</div>
-        <div class="nav-item" data-v="media" onclick="goView('media')">🖼️ 素材管理</div>
+        <div class="nav-item" data-v="moments" onclick="go('moments')"><span class="nav-icon">💬</span>动态管理</div>
+        <div class="nav-item" data-v="posts" onclick="go('posts')"><span class="nav-icon">📝</span>文章管理</div>
+        <div class="nav-item" data-v="ads" onclick="go('ads')"><span class="nav-icon">📢</span>广告管理</div>
+        <div class="nav-item" data-v="comments" onclick="go('comments')"><span class="nav-icon">💭</span>评论管理</div>
+        <div class="nav-item" data-v="douban" onclick="go('douban')"><span class="nav-icon">🎬</span>豆瓣影单</div>
+        <div class="nav-item" data-v="blacklist" onclick="go('blacklist')"><span class="nav-icon">🚫</span>黑名单</div>
+        <div class="nav-item" data-v="media" onclick="go('media')"><span class="nav-icon">🖼️</span>媒体库</div>
       </div>
-      <div class="nav-g"><div class="nav-gt">系统</div>
-        <div class="nav-item" data-v="settings" onclick="goView('settings')">⚙️ 站点设置</div>
-        <div class="nav-item" data-v="settings" onclick="goView('settings')">🔧 GitHub 配置</div>
+      <div class="nav-g"><div class="nav-gt">设置</div>
+        <div class="nav-item" data-v="profile" onclick="go('profile')"><span class="nav-icon">👤</span>个人资料</div>
+        <div class="nav-item" data-v="friends" onclick="go('friends')"><span class="nav-icon">🔗</span>友链管理</div>
+        <div class="nav-item" data-v="subscribe" onclick="go('subscribe')"><span class="nav-icon">📡</span>订阅友圈</div>
+        <div class="nav-item" data-v="music" onclick="go('music')"><span class="nav-icon">🎵</span>音乐管理</div>
+        <div class="nav-item" data-v="storage" onclick="go('storage')"><span class="nav-icon">☁️</span>云端存储</div>
+        <div class="nav-item" data-v="site" onclick="go('site')"><span class="nav-icon">⚙️</span>网站设置</div>
       </div>
     </nav>
-    <div class="sb-f">
-      <a onclick="toggleTheme()">🌗 切换暗色</a>
-      <a onclick="doLogout()">↪ 退出</a>
-    </div>
+    <div class="sb-f">Hugo + GitHub 驱动</div>
   </aside>
 
   <div id="main">
@@ -155,8 +51,9 @@ input,textarea,select,button{font-family:inherit;font-size:14px;outline:none}
         <button class="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
         <div class="bc" id="bc"><span>仪表盘</span></div>
       </div>
-      <div class="top-actions" id="top-actions">
-        <button class="btn btn-p btn-sm" onclick="doDeploy()">🚀 部署</button>
+      <div class="top-actions">
+        <button class="btn btn-sm" onclick="doDeploy()">🚀 部署</button>
+        <button class="btn btn-sm" onclick="doLogout()">↪ 退出</button>
       </div>
     </div>
 
@@ -164,343 +61,243 @@ input,textarea,select,button{font-family:inherit;font-size:14px;outline:none}
       <!-- Dashboard -->
       <div class="view on" id="v-dashboard">
         <div class="stats">
-          <div class="stat-card"><div class="stat-icon c1">📝</div><div><div class="stat-val" id="s-posts">-</div><div class="stat-lbl">文章</div></div></div>
-          <div class="stat-card"><div class="stat-icon c2">🖼️</div><div><div class="stat-val" id="s-imgs">-</div><div class="stat-lbl">图片</div></div></div>
-          <div class="stat-card"><div class="stat-icon c3">📁</div><div><div class="stat-val" id="s-drafts">-</div><div class="stat-lbl">草稿</div></div></div>
-          <div class="stat-card"><div class="stat-icon c4">📅</div><div><div class="stat-val" id="s-recent">-</div><div class="stat-lbl">近7天</div></div></div>
+          <div class="stat"><div class="stat-i c1">💬</div><div class="stat-v" id="s-m">-</div><div class="stat-l">动态</div><span class="stat-p">↗ 0%</span></div>
+          <div class="stat"><div class="stat-i c2">📝</div><div class="stat-v" id="s-p">-</div><div class="stat-l">文章</div><span class="stat-p">↗ 0%</span></div>
+          <div class="stat"><div class="stat-i c3">💭</div><div class="stat-v" id="s-c">-</div><div class="stat-l">评论</div><span class="stat-p">-</span></div>
+          <div class="stat"><div class="stat-i c4">❤️</div><div class="stat-v" id="s-l">-</div><div class="stat-l">点赞</div><span class="stat-p">↗ 0%</span></div>
         </div>
-        <div class="panel"><div class="panel-h"><div class="panel-t">📊 系统状态</div><button class="btn btn-xs" onclick="loadDash()">↻ 刷新</button></div>
+        <div class="charts">
+          <div class="panel"><div class="panel-h">近7天活动趋势<span class="more">详情</span></div>
+            <div class="panel-b"><div class="chart-box"><canvas id="c-bar"></canvas></div></div></div>
+          <div class="panel"><div class="panel-h">内容分布<span class="more">详情</span></div>
+            <div class="panel-b"><div class="chart-box"><canvas id="c-donut"></canvas></div></div></div>
+        </div>
+        <div class="panel"><div class="panel-h">快捷操作</div>
           <div class="panel-b">
-            <div class="h-row"><span>📡 GitHub API</span><span class="pill ok" id="h-api">正常</span></div>
-            <div class="h-row"><span>📦 仓库</span><span class="pill" id="h-repo">检测中</span></div>
-            <div class="h-row"><span>🚀 部署工作流</span><span class="pill" id="h-wf">检测中</span></div>
-            <div class="h-row"><span>🌐 博客可访问</span><span class="pill" id="h-site">检测中</span></div>
+            <div class="qa-grid">
+              <div class="qa" onclick="go('moments')"><div class="qa-i">📝</div><div class="qa-t">前往发布动态</div><div class="qa-d">在编辑器撰写新动态</div></div>
+              <div class="qa" onclick="go('profile')"><div class="qa-i">👤</div><div class="qa-t">编辑个人资料</div><div class="qa-d">修改头像、昵称、签名</div></div>
+              <div class="qa" onclick="go('music')"><div class="qa-i">🎵</div><div class="qa-t">音乐管理</div><div class="qa-d">管理插件和背景音乐</div></div>
+              <div class="qa" onclick="go('site')"><div class="qa-i">🌐</div><div class="qa-t">网站设置</div><div class="qa-d">配置站点基本信息</div></div>
+            </div>
           </div>
         </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="panel"><div class="panel-h">最近动态<span class="more" onclick="go('moments')">查看全部</span></div><div class="panel-b" id="r-m"><div class="empty">暂无</div></div></div>
+          <div class="panel"><div class="panel-h">最近评论<span class="more" onclick="go('comments')">查看全部</span></div><div class="panel-b" id="r-c"><div class="empty">暂无</div></div></div>
+        </div>
       </div>
 
-      <!-- Posts -->
-      <div class="view" id="v-posts">
-        <div class="tb">
-          <input type="text" id="p-search" placeholder="搜索文章..." oninput="renderPosts()">
-          <select id="p-filter" onchange="renderPosts()"><option value="all">全部</option><option value="pub">已发布</option><option value="draft">草稿</option></select>
-          <button class="btn btn-p btn-sm" onclick="newPost()">+ 新建</button>
-        </div>
-        <div class="plist" id="p-list"><div class="empty">加载中...</div></div>
-      </div>
+      <!-- Posts/Moments -->
+      <div class="view" id="v-posts"><div class="tb">
+        <input type="text" id="p-search" placeholder="搜索标题..." oninput="renderPosts()">
+        <select id="p-filter" onchange="renderPosts()"><option value="all">全部</option><option value="pub">已发布</option><option value="draft">草稿</option></select>
+        <button class="btn btn-p btn-sm" onclick="newPost()">+ 新建</button>
+      </div><div class="plist" id="p-list"><div class="empty">加载中...</div></div></div>
 
       <!-- Editor -->
-      <div id="ed-view">
+      <div id="ed">
         <div class="ed-tb">
-          <button onclick="fmt('bold')" title="粗体"><b>B</b></button>
-          <button onclick="fmt('italic')" title="斜体"><i>I</i></button>
-          <button onclick="fmt('strike')" title="删除线"><s>S</s></button>
-          <button onclick="fmt('code')" title="行内代码">&lt;/&gt;</button>
-          <span class="sep"></span>
-          <button onclick="fmt('h2')">H2</button><button onclick="fmt('h3')">H3</button>
-          <span class="sep"></span>
-          <button onclick="fmt('ul')">•</button><button onclick="fmt('ol')">1.</button>
-          <button onclick="fmt('task')">☐</button><button onclick="fmt('quote')">&ldquo;</button>
-          <span class="sep"></span>
-          <button onclick="fmt('link')">🔗</button>
-          <button onclick="document.getElementById('img-pick').click()">🖼️</button>
-          <button onclick="fmt('pre')">```</button>
+          <div class="ed-tb-l">
+            <button onclick="doFmt('undo')" title="撤销 Ctrl+Z">↶</button>
+            <button onclick="doFmt('redo')" title="重做 Ctrl+Y">↷</button>
+            <span class="sep"></span>
+            <button onclick="doFmt('bold')" title="粗体 Ctrl+B"><b>B</b></button>
+            <button onclick="doFmt('italic')" title="斜体 Ctrl+I"><i>I</i></button>
+            <button onclick="doFmt('strike')" title="删除线"><s>S</s></button>
+            <button onclick="doFmt('code')" title="行内代码">‹›</button>
+            <span class="sep"></span>
+            <button onclick="doFmt('h2')" title="标题2">H₂</button>
+            <button onclick="doFmt('h3')" title="标题3">H₃</button>
+            <button onclick="doFmt('h4')" title="标题4">H₄</button>
+            <span class="sep"></span>
+            <button onclick="doFmt('ul')" title="无序列表">•</button>
+            <button onclick="doFmt('ol')" title="有序列表">1.</button>
+            <button onclick="doFmt('task')" title="任务">☑</button>
+            <button onclick="doFmt('quote')" title="引用">❝</button>
+            <span class="sep"></span>
+            <button onclick="doFmt('link')" title="链接">🔗</button>
+            <button onclick="document.getElementById('img-pick').click()" title="本地图片">🖼️</button>
+            <button onclick="openImgMgr()" title="图片管理">📁</button>
+            <button onclick="doFmt('pre')" title="代码块">{}</button>
+            <button onclick="doFmt('hr')" title="分割线">─</button>
+            <button onclick="doFmt('table')" title="表格">⊞</button>
+          </div>
+          <div class="ed-tb-r">
+            <select id="ed-mode" onchange="setMode(this.value)" title="视图模式">
+              <option value="split">实时预览</option>
+              <option value="edit">源码</option>
+              <option value="preview">预览</option>
+            </select>
+          </div>
         </div>
-        <div class="ed-body">
-          <textarea id="editor" placeholder="在此书写 Markdown..." oninput="upPreview()"></textarea>
-          <div id="preview"></div>
+        <div class="ed-meta-r">
+          <input type="text" id="em-t" placeholder="文章标题（必填）" style="flex:1">
+          <button class="btn btn-sm" onclick="openFm()" title="编辑 Front Matter">⚙️</button>
         </div>
-        <div class="ed-meta">
-          <label>标题</label><input type="text" id="em-title" placeholder="必填" style="flex:1;min-width:120px">
-          <label>分类</label><input type="text" id="em-cat" placeholder="可选" style="width:100px">
-          <label>标签</label><input type="text" id="em-tags" placeholder="逗号分隔" style="width:140px">
-          <label class="sw"><input type="checkbox" id="em-draft" checked> 草稿</label>
-          <label class="sw"><input type="checkbox" id="em-webp" checked> WebP</label>
-          <input type="file" id="img-pick" accept="image/*" style="display:none" onchange="upImg(this.files)">
-          <span style="flex:1"></span>
-          <button class="btn btn-sm" onclick="savePost(false)">💾 草稿</button>
-          <button class="btn btn-p btn-sm" onclick="savePost(true)">✅ 发布</button>
-          <button class="btn btn-d btn-sm" onclick="delPost()" id="btn-del">🗑️</button>
-          <button class="btn btn-sm" onclick="goView('posts')">← 返回</button>
+        <div class="ed-tabs"><div class="ed-tab on" data-pane="edit" onclick="swPane('edit')">编辑</div><div class="ed-tab" data-pane="preview" onclick="swPane('preview')">预览</div></div>
+        <div class="ed-body" id="ed-body">
+          <div class="ed-pane ed-edit"><div class="ed-wrap"><textarea id="editor" placeholder="开始写作..." spellcheck="false" oninput="upPrev()"></textarea></div></div>
+          <div class="ed-pane ed-prev"><div id="preview"></div></div>
         </div>
+        <div class="ed-fm" id="ed-fm">
+          <div class="ed-fm-h"><span>Front Matter</span><button onclick="closeFm()">✕</button></div>
+          <textarea id="em-fm" placeholder="title: &#10;date: &#10;draft: true&#10;categories:&#10;  - tag&#10;tags:&#10;  - tag"></textarea>
+        </div>
+        <div class="ed-st">
+          <div class="ed-st-l">
+            <span id="st-info">Ctrl+S 保存 · Ctrl+B 粗体 · Ctrl+I 斜体</span>
+          </div>
+          <div class="ed-st-r">
+            <span id="st-cnt">0 字</span><span id="st-time">≈1 分钟</span>
+            <button class="btn btn-sm" onclick="save(false)" title="保存草稿">💾</button>
+            <button class="btn btn-p btn-sm" onclick="save(true)" title="发布">✅ 发布</button>
+            <button class="btn btn-d btn-sm" onclick="del()" title="删除">🗑️</button>
+          </div>
+        </div>
+        <input type="file" id="img-pick" accept="image/*" style="display:none" onchange="upOne(this.files)">
       </div>
 
       <!-- Media -->
       <div class="view" id="v-media">
-        <div class="upload-zone" onclick="document.getElementById('img-up').click()" id="up-zone">
-          <div class="ic">📤</div>
-          <div><b>点击或拖拽图片上传</b></div>
+        <div class="up-zone" onclick="document.getElementById('img-up').click()" id="upz">
+          <div class="ic">📤</div><div><b>点击或拖拽图片上传</b></div>
           <div class="up-opts">
-            <label>最大宽 <input type="number" id="img-mw" value="1600" style="width:70px;padding:3px 6px"></label>
-            <label>质量 <input type="number" id="img-q" value="82" min="1" max="100" style="width:50px;padding:3px 6px"></label>
-            <label><input type="checkbox" id="img-webp" checked> WebP</label>
+            <label>最大宽 <input type="number" id="i-mw" value="1600" style="width:60px;padding:2px 6px"></label>
+            <label>质量 <input type="number" id="i-q" value="82" style="width:50px;padding:2px 6px"></label>
+            <label><input type="checkbox" id="i-w" checked> WebP</label>
           </div>
-          <input type="file" id="img-up" accept="image/*" multiple style="display:none" onchange="upImgs(this.files)">
+          <input type="file" id="img-up" accept="image/*" multiple style="display:none" onchange="upMany(this.files)">
         </div>
-        <div class="img-grid" id="img-grid"><div class="empty">加载中...</div></div>
+        <div class="img-grid" id="i-grid"><div class="empty">加载中...</div></div>
       </div>
 
-      <!-- Settings -->
-      <div class="view" id="v-settings">
-        <div class="panel"><div class="panel-h"><div class="panel-t">GitHub 配置</div></div>
-          <div class="panel-b">
-            <div class="set-form">
-              <div class="field"><label>Token</label><input type="password" id="s-token"></div>
-              <div class="field"><label>仓库 (owner/repo)</label><input type="text" id="s-repo" value="q3190872366/amigo-blog"></div>
-              <div class="field"><label>分支</label><input type="text" id="s-branch" value="master"></div>
-              <div class="field"><label>文章路径</label><input type="text" id="s-path" value="content/posts"></div>
-              <button class="btn btn-p btn-sm" onclick="saveConfig()">保存</button>
-            </div>
+      <!-- Coming Soon Views -->
+      <div class="view" id="v-ads"><div class="coming"><div class="ic">📢</div><h3>广告管理</h3><p>基于 page bundle 的广告位管理。<br>通过编辑 <code>content/ads/</code> 目录下的 markdown 文件实现广告配置。</p></div></div>
+      <div class="view" id="v-comments"><div class="coming"><div class="ic">💭</div><h3>评论管理</h3><p>当前博客使用 Artalk / Giscus 第三方评论系统。<br>评论审核请到对应平台后台进行。</p></div></div>
+      <div class="view" id="v-douban"><div class="coming"><div class="ic">🎬</div><h3>豆瓣影单</h3><p>需要后端 API 同步豆瓣数据。<br>当前 Hugo 静态架构不支持，可手动编辑 <code>data/douban.yml</code>。</p></div></div>
+      <div class="view" id="v-blacklist"><div class="coming"><div class="ic">🚫</div><h3>黑名单</h3><p>需要后端实现 IP 拦截。<br>当前 Pages Functions 可在 webhook 中加 IP 检查逻辑。</p></div></div>
+
+      <!-- Profile -->
+      <div class="view" id="v-profile"><div class="panel"><div class="panel-h">个人资料（编辑 hugo.toml）</div>
+        <div class="panel-b">
+          <div class="set-grid">
+            <div class="field"><label>用户名</label><input type="text" id="pr-user" placeholder="博主"></div>
+            <div class="field"><label>描述/签名</label><input type="text" id="pr-desc" placeholder="一句话介绍"></div>
+            <div class="field"><label>头像 URL</label><input type="text" id="pr-avatar" placeholder="/images/avatar.jpg"></div>
+            <div class="field"><label>封面视频 URL</label><input type="text" id="pr-cover" placeholder="/videos/xxx.mp4"></div>
           </div>
+          <div style="margin-top:12px"><button class="btn btn-p btn-sm" onclick="saveProfile()">保存到 hugo.toml</button></div>
         </div>
+      </div></div>
+
+      <!-- Friends -->
+      <div class="view" id="v-friends"><div class="panel"><div class="panel-h">友链管理（编辑 data/friends.yml）</div>
+        <div class="panel-b">
+          <div class="field"><label>YAML 内容</label><textarea id="fr-yaml" placeholder="加载中..."></textarea></div>
+          <div style="margin-top:12px"><button class="btn btn-p btn-sm" onclick="saveFriends()">保存</button> <button class="btn btn-sm" onclick="loadFriends()">↻ 重载</button></div>
+        </div>
+      </div></div>
+
+      <!-- Subscribe -->
+      <div class="view" id="v-subscribe"><div class="coming"><div class="ic">📡</div><h3>订阅友圈</h3><p>需要后端 API 实现 OPML 解析和跨站订阅。<br>当前架构暂不支持。</p></div></div>
+
+      <!-- Music -->
+      <div class="view" id="v-music"><div class="panel"><div class="panel-h">音乐设置（编辑 hugo.toml）</div>
+        <div class="panel-b">
+          <div class="field"><label>音乐插件 URL (MusicFree 兼容)</label><input type="text" id="mu-url" placeholder="https://..."></div>
+          <div class="field"><label>默认歌单 ID</label><input type="text" id="mu-pl" placeholder="歌单 ID"></div>
+          <div class="field"><label>自动播放</label><select id="mu-auto"><option value="false">关闭</option><option value="true">开启</option></select></div>
+          <div style="margin-top:12px"><button class="btn btn-p btn-sm" onclick="saveMusic()">保存</button></div>
+        </div>
+      </div></div>
+
+      <!-- Storage -->
+      <div class="view" id="v-storage"><div class="panel"><div class="panel-h">云端存储（CDN 设置）</div>
+        <div class="panel-b">
+          <div class="set-grid">
+            <div class="field"><label>当前 CDN</label><input type="text" value="jsDelivr (已配置)" readonly></div>
+            <div class="field"><label>CDN 域名</label><input type="text" value="cdn.jsdelivr.net" readonly></div>
+            <div class="field"><label>仓库路径前缀</label><input type="text" value="gh/q3190872366/amigo-blog@master" readonly></div>
+            <div class="field"><label>缓存策略</label><input type="text" value="默认 7 天" readonly></div>
+          </div>
+          <p style="margin-top:12px;font-size:11px;color:var(--m)">jsDelivr 已为字体、视频、图片提供 CDN 加速。<br>如需更换为又拍云或自有 CDN，请修改主题模板和 Hugo 配置。</p>
+        </div>
+      </div></div>
+
+      <!-- Site -->
+      <div class="view" id="v-site"><div class="panel"><div class="panel-h">网站设置（编辑 hugo.toml）</div>
+        <div class="panel-b">
+          <div class="set-grid">
+            <div class="field"><label>站点标题</label><input type="text" id="st-title" placeholder="我的博客"></div>
+            <div class="field"><label>语言</label><input type="text" id="st-lang" placeholder="zh-cn"></div>
+            <div class="field"><label>评论系统</label><select id="st-cm"><option value="none">关闭</option><option value="artalk">Artalk</option><option value="twikoo">Twikoo</option><option value="giscus">Giscus</option></select></div>
+            <div class="field"><label>PJAX</label><select id="st-pjax"><option value="true">开启</option><option value="false">关闭</option></select></div>
+            <div class="field"><label>暗色模式</label><select id="st-dark"><option value="true">开启</option><option value="false">关闭</option></select></div>
+            <div class="field"><label>页脚文本</label><input type="text" id="st-foot"></div>
+          </div>
+          <div style="margin-top:12px"><button class="btn btn-p btn-sm" onclick="saveSite()">保存到 hugo.toml</button></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</div>
+
+<div class="img-modal" id="img-modal">
+  <div class="img-modal-bg" onclick="closeImgMgr()"></div>
+  <div class="img-modal-bd">
+    <div class="img-modal-h">
+      <div class="img-modal-t">
+        <span class="img-tab on" data-tab="upload" onclick="swImgTab('upload')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          普通图片
+        </span>
+        <span class="img-tab" data-tab="library" onclick="swImgTab('library')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          媒体库
+        </span>
+      </div>
+      <button class="img-modal-close" onclick="closeImgMgr()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="img-modal-c">
+      <!-- Upload Pane -->
+      <div class="img-tab-pane on" data-pane="upload">
+        <div class="img-upload-card" id="img-mgr-zone" onclick="document.getElementById('img-mgr-file').click()">
+          <div class="img-upload-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          </div>
+          <div class="img-upload-tip">点击上传图片</div>
+          <div class="img-upload-sub">支持 JPG、PNG、GIF、WebP</div>
+        </div>
+        <input type="file" id="img-mgr-file" accept="image/*" multiple style="display:none" onchange="mgrUpload(this.files)">
+        <div class="img-opts-row">
+          <label>最大宽 <input type="number" id="mgr-mw" value="1600" style="width:56px"></label>
+          <label>质量 <input type="number" id="mgr-q" value="82" style="width:48px"></label>
+          <label><input type="checkbox" id="mgr-w" checked> WebP</label>
+        </div>
+        <button class="img-lib-btn" onclick="swImgTab('library')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          从媒体库导入
+        </button>
+        <div id="img-mgr-status" class="img-mgr-status"></div>
+      </div>
+      <!-- Library Pane -->
+      <div class="img-tab-pane" data-pane="library">
+        <div class="img-mgr-bar">
+          <input type="text" id="img-mgr-search" placeholder="搜索图片..." oninput="filterMgr()">
+          <button class="btn btn-xs" onclick="refreshMgr()">刷新</button>
+        </div>
+        <div class="img-mgr-grid" id="img-mgr-grid"></div>
+        <div id="img-mgr-empty" class="empty" style="display:none">暂无图片</div>
       </div>
     </div>
   </div>
 </div>
 
 <div id="toast"></div>
-<div class="modal-bg" id="modal" onclick="this.classList.remove('on')"><div class="modal-bd" onclick="event.stopPropagation()"></div></div>
 
-<script>
-// ======== State ========
-let P={},O,R,B='master',PP='content/posts';
-let posts=[],imgs=[],curP=null,cv='dashboard';
-const I=(id)=>document.getElementById(id);
-
-function loadState(){
-  const s=localStorage.getItem('blog_adm2');
-  if(!s)return;
-  try{const d=JSON.parse(s);P=d.pat||'';O=d.owner||'q3190872366';R=d.repo||'amigo-blog';B=d.branch||'main';if(B==='main')B='master';PP=d.path||'content/posts';if(d.dark)document.documentElement.classList.add('dark')}catch(_){}
-}
-loadState();
-const saved=localStorage.getItem('blog_adm2');
-if(saved&&P){try{if(P)I('li-token').value=P}catch(_){}}
-
-// ======== Login ========
-function doLogin(){
-  P=I('li-token').value.trim();O=I('li-owner').value.trim();R=I('li-repo').value.trim();
-  if(!P||!O||!R){toast('请填写完整','err');return}
-  localStorage.setItem('blog_adm2',JSON.stringify({pat:P,owner:O,repo:R,branch:B,path:PP,dark:document.documentElement.classList.contains('dark')}));
-  I('login').style.display='none';I('app').classList.add('app-open');
-  loadDash();
-}
-function doLogout(){localStorage.removeItem('blog_adm2');location.reload()}
-function saveConfig(){
-  const t=I('s-token');if(t&&t.value)P=t.value;
-  const r=I('s-repo');if(r&&r.value){const p=r.value.split('/');if(p.length===2){O=p[0];R=p[1]}}
-  const b=I('s-branch');if(b&&b.value)B=b.value;
-  const pp=I('s-path');if(pp&&pp.value)PP=pp.value;
-  localStorage.setItem('blog_adm2',JSON.stringify({pat:P,owner:O,repo:R,branch:B,path:PP,dark:document.documentElement.classList.contains('dark')}));
-  toast('已保存','ok');loadDash();
-}
-function toggleTheme(){
-  document.documentElement.classList.toggle('dark');
-  localStorage.setItem('blog_adm2',JSON.stringify({pat:P,owner:O,repo:R,branch:B,path:PP,dark:document.documentElement.classList.contains('dark')}));
-}
-
-// ======== GitHub API ========
-function gh(path,opts={}){
-  return fetch('https://api.github.com/repos/'+O+'/'+R+path,{...opts,headers:{Authorization:'token '+P,Accept:'application/vnd.github+json','Content-Type':'application/json',...(opts.headers||{})}}).then(async r=>{
-    const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.message||'HTTP '+r.status);return d;
-  });
-}
-function ghp(p){return p.split('/').map(encodeURIComponent).join('/')}
-
-function b64d(raw){
-  try{const b=Uint8Array.from(atob(raw.replace(/\n/g,'')),c=>c.charCodeAt(0));return new TextDecoder('utf-8').decode(b)}catch(e){return atob(raw.replace(/\n/g,''))}
-}
-function b64e(s){const b=new TextEncoder().encode(s);let r='';for(const x of b)r+=String.fromCharCode(x);return btoa(r)}
-
-// ======== FM parser ========
-function parseFM(raw){
-  const m=raw.match(/^---\n([\s\S]*?)\n---/);if(!m)return{};
-  const fm={};let ck=null;
-  m[1].split('\n').forEach(l=>{
-    const a=l.match(/^\s+-\s+(.*)/);if(a&&ck){fm[ck]=fm[ck]||[];fm[ck].push(a[1].trim().replace(/^['"]|['"]$/g,''));return}
-    const kv=l.match(/^(\w+):\s*(.*)/);if(kv){const v=kv[2].trim();fm[kv[1]]=v==='true'?true:v==='false'?false:v.replace(/^['"]|['"]$/g,'');ck=v===''||v==='[]'?kv[1]:null}
-  });
-  return fm;
-}
-
-// ======== Toast ========
-let _to;
-function toast(m,t){const e=I('toast');e.textContent=m;e.className=t;clearTimeout(_to);_to=setTimeout(()=>e.className='',2500)}
-
-// ======== Navigation ========
-function goView(v){
-  document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
-  I('ed-view').classList.remove('on');
-  I('v-'+v)?.classList.add('on');
-  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('on'));
-  document.querySelector('.nav-item[data-v="'+v+'"]')?.classList.add('on');
-  cv=v;
-  I('bc').innerHTML={'dashboard':'仪表盘','posts':'仪表盘 / 文章管理','media':'仪表盘 / 素材管理','settings':'仪表盘 / 设置','editor':'仪表盘 / 文章管理 / 编辑'}[v].split(' / ').map(s=>'<span>'+s+'</span>').join('');
-  if(v==='posts')loadPosts();
-  if(v==='media')loadImgs();
-  if(v==='dashboard')loadDash();
-  if(window.innerWidth<768)I('sidebar').classList.remove('open');
-  // topbar actions
-  if(v==='editor')I('top-actions').innerHTML='<button class="btn btn-sm" onclick="goView(\'posts\')">← 返回</button>';
-  else I('top-actions').innerHTML='<button class="btn btn-p btn-sm" onclick="doDeploy()">🚀 部署</button>';
-}
-
-// ======== Dashboard ========
-async function loadDash(){
-  try{
-    const data=await gh('/contents/'+PP);let p=0,d=0,rc=0,i=0;
-    const w=new Date(Date.now()-7*86400000);
-    for(const it of data){if(it.type!=='dir')continue;p++;try{
-      const f=await gh('/contents/'+ghp(PP+'/'+it.name+'/index.md'));
-      const fm=parseFM(b64d(f.content));
-      if(fm.draft)d++;
-      if(f.commit?.author?.date&&new Date(f.commit.author.date)>w)rc++;
-      try{const ims=await gh('/contents/'+PP+'/'+it.name);ims.forEach(x=>{if(/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(x.name))i++})}catch(_){}
-    }catch(_){}}
-    I('s-posts').textContent=p;I('s-imgs').textContent=i;I('s-drafts').textContent=d;I('s-recent').textContent=rc;
-    sPill('h-api','ok','正常');sPill('h-repo','ok','正常');sPill('h-wf','ok','正常');sPill('h-site','ok','正常');
-  }catch(e){toast('加载失败: '+e.message,'err')}
-}
-function sPill(id,c,t){const e=I(id);e.className='pill '+c;e.textContent=t}
-
-// ======== Posts ========
-async function loadPosts(){
-  try{
-    const data=await gh('/contents/'+PP);posts=[];
-    for(const it of data){if(it.type!=='dir')continue;try{
-      const f=await gh('/contents/'+ghp(PP+'/'+it.name+'/index.md'));
-      const raw=b64d(f.content),fm=parseFM(raw);
-      posts.push({slug:it.name,title:fm.title||it.name,date:fm.date||'',sha:f.sha,draft:fm.draft,cats:fm.categories||[],tags:fm.tags||[],raw});
-    }catch(_){posts.push({slug:it.name,title:it.name,date:'',sha:null,draft:false,cats:[],tags:[],raw:''})}}
-    posts.sort((a,b)=>(b.date||'').localeCompare(a.date||''));renderPosts();
-  }catch(e){I('p-list').innerHTML='<div class="empty">加载失败: '+e.message+'</div>'}
-}
-function renderPosts(){
-  const q=(I('p-search').value||'').toLowerCase(),f=I('p-filter').value;
-  const fl=posts.filter(p=>{
-    if(q&&!p.title.toLowerCase().includes(q)&&!p.slug.toLowerCase().includes(q))return 0;
-    if(f==='draft'&&!p.draft)return 0;if(f==='pub'&&p.draft)return 0;return 1;
-  });
-  I('p-list').innerHTML=fl.length?fl.map(p=>'<div class="pitem" onclick="editPost(\''+p.slug+'\')"><div><div class="title">'+esc(p.title)+'</div><div class="meta">'+(p.date?p.date.slice(0,10):'')+(p.cats.length?' · '+p.cats.join(', '):'')+(p.tags.length?' · '+p.tags.join(', '):'')+'</div></div><span class="badge '+(p.draft?'draft':'pub')+'">'+(p.draft?'草稿':'已发布')+'</span></div>').join(''):'<div class="empty">没有文章</div>';
-}
-function esc(s){return(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-
-function newPost(){curP=null;I('editor').value='';I('em-title').value='新文章';I('em-draft').checked=true;I('preview').innerHTML='';goView('editor')}
-function editPost(slug){const p=posts.find(x=>x.slug===slug);if(!p)return;curP=p;I('editor').value=(p.raw.match(/^---\n[\s\S]*?\n---\n/)?p.raw.replace(/^---\n[\s\S]*?\n---\n/,''):p.raw);I('em-title').value=p.title;I('em-cat').value=p.cats.join(', ');I('em-tags').value=(p.tags||[]).join(',');I('em-draft').checked=p.draft;goView('editor');upPreview()}
-function upPreview(){I('preview').innerHTML=marked.parse(I('editor').value||'')}
-
-function bFM(){
-  const t=I('em-title').value||'未命名',d=I('em-draft').checked;
-  const cat=I('em-cat').value.split(',').map(s=>s.trim()).filter(Boolean);
-  const tags=I('em-tags').value.split(',').map(s=>s.trim()).filter(Boolean);
-  const date=curP?(parseFM(curP.raw).date||new Date().toISOString()):new Date().toISOString();
-  let l=['---','title: "'+t+'"','date: "'+date+'"','draft: '+(d?'true':'false'),'author: \'\'','summary: \'\'','cover: \'\'','comments: true'];
-  l.push(cat.length?'categories:\n'+cat.map(c=>'  - "'+c+'"').join('\n'):'categories: []');
-  l.push(tags.length?'tags:\n'+tags.map(c=>'  - "'+c+'"').join('\n'):'tags: []');
-  l.push('---','');return l.join('\n');
-}
-
-async function savePost(pub){
-  const body=I('editor').value,all=bFM()+body;
-  const title=I('em-title').value||'未命名',isNew=!curP;
-  if(pub)I('em-draft').checked=false;
-  try{
-    let slug,path,sha=null;
-    if(isNew){const n=new Date();slug=n.toISOString().slice(0,10)+'-'+n.toISOString().slice(11,19).replace(/:/g,'');path=PP+'/'+slug+'/index.md'}
-    else{slug=curP.slug;path=PP+'/'+slug+'/index.md';sha=curP.sha}
-    const pb={message:'admin: '+(pub?'publish':'update')+' '+title,content:b64e(all),branch:B};
-    if(sha)pb.sha=sha;
-    await gh('/contents/'+ghp(path),{method:'PUT',body:JSON.stringify(pb)});
-    toast(pub?'已发布':'已保存','ok');await loadPosts();
-    const i=posts.findIndex(p=>p.slug===slug);if(i>=0)curP=posts[i];
-    if(pub)setTimeout(()=>doDeploy(),500);
-  }catch(e){toast('保存失败: '+e.message,'err')}
-}
-
-async function delPost(){if(!curP)return;if(!confirm('确定删除「'+curP.title+'」？全部图片也会被删除'))return;try{const dir=await gh('/contents/'+PP+'/'+curP.slug);for(const f of dir){if(f.sha)await gh('/contents/'+ghp(f.path),{method:'DELETE',body:JSON.stringify({message:'admin: delete '+f.name,sha:f.sha,branch:B})})}toast('已删除','ok');loadPosts();goView('posts')}catch(e){toast('删除失败: '+e.message,'err')}}
-
-// ======== Editor toolbar ========
-function fmt(type){
-  const e=I('editor'),s=e.selectionStart,ed=e.selectionEnd,sel=e.value.substring(s,ed);
-  let b=e.value.substring(0,s),a=e.value.substring(ed);
-  const ls=b.lastIndexOf('\n')+1;
-  switch(type){
-    case'bold':b+='**';a='**'+a;break;case'italic':b+='*';a='*'+a;break;case'strike':b+='~~';a='~~'+a;break;
-    case'code':b+='`';a='`'+a;break;
-    case'h2':b=b.substring(0,ls)+'## '+b.substring(ls);break;case'h3':b=b.substring(0,ls)+'### '+b.substring(ls);break;
-    case'ul':b=b.substring(0,ls)+'- '+b.substring(ls);break;case'ol':b=b.substring(0,ls)+'1. '+b.substring(ls);break;
-    case'task':b=b.substring(0,ls)+'- [ ] '+b.substring(ls);break;case'quote':b=b.substring(0,ls)+'> '+b.substring(ls);break;
-    case'link':{const u=prompt('URL:');if(u){b+='['+(sel||'link')+'](';a=')'+a}}break;
-    case'pre':b+='```\n';a='\n```'+a;break;
-  }
-  e.value=b+(sel||'')+a;e.focus();upPreview();
-}
-
-// ======== Image processing ========
-function compImg(file,mw,q,webp){
-  return new Promise((ok,no)=>{
-    const img=new Image();img.onload=()=>{
-      const w=Math.min(img.width,mw),h=img.height*w/img.width;
-      const c=document.createElement('canvas');c.width=w;c.height=h;
-      const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);
-      c.toBlob(b=>{const m=webp?'image/webp':file.type;const ext=m==='image/webp'?'.webp':m==='image/png'?'.png':'.jpg';ok({blob:b,ext,orig:file.size,comp:b.size})},webp?'image/webp':file.type,q/100);
-    };img.onerror=no;img.src=URL.createObjectURL(file);
-  });
-}
-
-function upImg(files){if(!files||!files.length)return;const w=I('em-webp').checked;upImgs(files,w)}
-async function upImgs(files,fw){
-  if(!files||!files.length)return;
-  const webp=fw!==undefined?fw:(I('img-webp')?.checked??true);
-  const mw=parseInt(I('img-mw')?.value)||1600,q=parseInt(I('img-q')?.value)||82;
-  // determine target dir
-  let dir;
-  if(!curP&&cv==='media')dir='static/posts/images';
-  else if(!curP){toast('请先保存草稿再上传','err');return}
-  else dir=PP+'/'+curP.slug;
-  for(const file of files){try{
-    toast('处理 '+file.name+'...','info');
-    const{blob,ext}=await compImg(file,mw,q,webp);
-    const bn='img-'+Date.now().toString(36)+ext;
-    const rdr=new FileReader();
-    const content=await new Promise((ok,no)=>{rdr.onload=()=>ok(rdr.result.split(',')[1]);rdr.onerror=no;rdr.readAsDataURL(blob)});
-    const path=dir+'/'+bn;
-    await gh('/contents/'+ghp(path),{method:'PUT',body:JSON.stringify({message:'admin: upload '+bn,content,branch:B})});
-    if(curP){const md='!['+bn+']('+bn+')';insAt(md);upPreview()}
-    toast('已上传 '+bn,'ok');
-  }catch(e){toast('上传失败: '+e.message,'err')}}
-  if(cv==='media')loadImgs();
-}
-function insAt(t){const e=I('editor'),s=e.selectionStart,ed=e.selectionEnd;e.value=e.value.substring(0,s)+t+e.value.substring(ed);e.selectionStart=e.selectionEnd=s+t.length}
-
-// ======== Media ========
-async function loadImgs(){
-  I('img-grid').innerHTML='<div class="empty">扫描中...</div>';imgs=[];
-  try{const ps=await gh('/contents/'+PP);
-    for(const p of ps){if(p.type!=='dir')continue;try{const fs=await gh('/contents/'+PP+'/'+p.name);for(const f of fs){if(/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(f.name))imgs.push({name:f.name,path:f.path,sha:f.sha,url:f.download_url,slug:p.name})}}catch(_){}}
-    // also static/posts/images
-    try{const fs=await gh('/contents/static/posts/images');for(const f of fs){if(/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(f.name))imgs.push({name:f.name,path:f.path,sha:f.sha,url:f.download_url,slug:'公共'})}}catch(_){}
-    renderImgs();
-  }catch(e){I('img-grid').innerHTML='<div class="empty">加载失败: '+e.message+'</div>'}
-}
-function renderImgs(){
-  I('img-grid').innerHTML=imgs.length?imgs.map(x=>'<div class="img-card"><img src="'+x.url+'" alt="'+esc(x.name)+'" loading="lazy"><div class="img-acts"><button onclick="cpyUrl(\''+x.url+'\')">复制</button><button onclick="delImg(\''+x.path+'\',\''+x.sha+'\')">删除</button></div><div class="img-info"><span>'+esc(x.name)+'</span><span>'+esc(x.slug)+'</span></div></div>').join(''):'<div class="empty">还没有图片</div>';
-}
-function cpyUrl(u){navigator.clipboard.writeText(u);toast('已复制','ok')}
-async function delImg(p,sha){if(!confirm('删除？'))return;try{await gh('/contents/'+ghp(p),{method:'DELETE',body:JSON.stringify({message:'admin: delete image',sha,branch:B})});toast('已删除','ok');loadImgs()}catch(e){toast('删除失败: '+e.message,'err')}}
-
-// ======== Deploy ========
-async function doDeploy(){
-  try{await gh('/actions/workflows/deploy.yml/dispatches',{method:'POST',body:JSON.stringify({ref:B})});toast('已触发部署','ok')}
-  catch(e){toast('触发失败: '+e.message,'err')}
-}
-
-// ======== Drag & Drop ========
-['dragover','dragenter'].forEach(ev=>document.body.addEventListener(ev,e=>{const z=e.target.closest('.upload-zone');if(z){e.preventDefault();z.classList.add('drag')}}));
-['dragleave','drop'].forEach(ev=>document.body.addEventListener(ev,e=>{const z=e.target.closest('.upload-zone');if(z)z.classList.remove('drag')}));
-document.body.addEventListener('drop',e=>{const z=e.target.closest('.upload-zone');if(z&&e.dataTransfer.files.length){e.preventDefault();upImgs(e.dataTransfer.files)}});
-
-// ======== Keyboard ========
-document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();if(cv==='editor')savePost(false)}});
-</script>
+<script src="admin.js"></script>
 </body>
 </html>
