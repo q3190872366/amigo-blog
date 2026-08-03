@@ -60,6 +60,9 @@
                                 {{ if not (findRE "^(http|/)" $imgSrc) }}
                                     {{ with $currentPage.Resources.GetMatch $imgSrc }}
                                         {{ $imgSrc = .RelPermalink }}
+                                    {{ else }}
+                                        {{/* 兜底：用页面所在目录的 RelPermalink（去掉 .html 后缀）拼接文件名 */}}
+                                        {{ $imgSrc = printf "%s/%s" (strings.TrimSuffix ".html" $currentPage.RelPermalink) $imgSrc }}
                                     {{ end }}
                                 {{ end }}
                                 <img src="{{ $imgSrc }}" alt="Image" loading="lazy">
@@ -73,6 +76,9 @@
                                 {{ if not (findRE "^(http|/)" $imgSrc) }}
                                     {{ with $currentPage.Resources.GetMatch $imgSrc }}
                                         {{ $imgSrc = .RelPermalink }}
+                                    {{ else }}
+                                        {{/* 兜底：拼接页面 bundle 目录路径 */}}
+                                        {{ $imgSrc = printf "%s/%s" (strings.TrimSuffix ".html" $currentPage.RelPermalink) $imgSrc }}
                                     {{ end }}
                                 {{ end }}
                                 <div class="gallery-item">
