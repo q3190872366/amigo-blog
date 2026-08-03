@@ -519,7 +519,7 @@ async function uploadImages(files, forceWebp) {
     try {
       toast(`处理 ${file.name}...`, 'info');
       const { blob, ext } = await compressImage(file, maxW, q, useWebp);
-      const baseName = file.name.replace(/\.[^.]+$/, '').replace(/[^\w\u4e00-\u9fff-]/g, '_');
+      const baseName = 'img-' + Date.now().toString(36);
       const filename = `${baseName}-${Date.now()}${ext}`;
       const reader = new FileReader();
       const content = await new Promise((res, rej) => {

@@ -91,9 +91,11 @@
                 {{ end }}
                 {{ if and $coverSrc (not (findRE "^(https?://|/)" $coverSrc)) }}
                     {{ with $currentPage.Resources.GetMatch $coverSrc }}
-                        {{ $coverSrc = .RelPermalink }}
+                        {{ $pbSlug := path.Base (path.Dir $currentPage.File.Dir) }}
+                        {{ $coverSrc = printf "https://cdn.jsdelivr.net/gh/q3190872366/amigo-blog@master/content/posts/%s/%s" $pbSlug .Name }}
                     {{ else }}
-                        {{ $coverSrc = printf "%s/%s" (strings.TrimSuffix ".html" $currentPage.RelPermalink) $coverSrc }}
+                        {{ $pbSlug := path.Base (path.Dir $currentPage.File.Dir) }}
+                        {{ $coverSrc = printf "https://cdn.jsdelivr.net/gh/q3190872366/amigo-blog@master/content/posts/%s/%s" $pbSlug $coverSrc }}
                     {{ end }}
                 {{ end }}
 
@@ -148,9 +150,11 @@
                                 {{ $imgSrc := . }}
                                 {{ if not (findRE "^(http|/)" $imgSrc) }}
                                     {{ with $currentPage.Resources.GetMatch $imgSrc }}
-                                        {{ $imgSrc = .RelPermalink }}
+                                        {{ $pbSlug := path.Base (path.Dir $currentPage.File.Dir) }}
+                                        {{ $imgSrc = printf "https://cdn.jsdelivr.net/gh/q3190872366/amigo-blog@master/content/posts/%s/%s" $pbSlug .Name }}
                                     {{ else }}
-                                        {{ $imgSrc = printf "%s/%s" (strings.TrimSuffix ".html" $currentPage.RelPermalink) $imgSrc }}
+                                        {{ $pbSlug := path.Base (path.Dir $currentPage.File.Dir) }}
+                                        {{ $imgSrc = printf "https://cdn.jsdelivr.net/gh/q3190872366/amigo-blog@master/content/posts/%s/%s" $pbSlug $imgSrc }}
                                     {{ end }}
                                 {{ end }}
                                 <img src="{{ $imgSrc }}" alt="Image" loading="lazy">
@@ -162,9 +166,11 @@
                                 {{ $imgSrc := . }}
                                 {{ if not (findRE "^(http|/)" $imgSrc) }}
                                     {{ with $currentPage.Resources.GetMatch $imgSrc }}
-                                        {{ $imgSrc = .RelPermalink }}
+                                        {{ $pbSlug := path.Base (path.Dir $currentPage.File.Dir) }}
+                                        {{ $imgSrc = printf "https://cdn.jsdelivr.net/gh/q3190872366/amigo-blog@master/content/posts/%s/%s" $pbSlug .Name }}
                                     {{ else }}
-                                        {{ $imgSrc = printf "%s/%s" (strings.TrimSuffix ".html" $currentPage.RelPermalink) $imgSrc }}
+                                        {{ $pbSlug := path.Base (path.Dir $currentPage.File.Dir) }}
+                                        {{ $imgSrc = printf "https://cdn.jsdelivr.net/gh/q3190872366/amigo-blog@master/content/posts/%s/%s" $pbSlug $imgSrc }}
                                     {{ end }}
                                 {{ end }}
                                 <div class="gallery-item">
