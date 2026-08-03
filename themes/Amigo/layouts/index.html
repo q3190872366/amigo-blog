@@ -92,6 +92,8 @@
                 {{ if and $coverSrc (not (findRE "^(https?://|/)" $coverSrc)) }}
                     {{ with $currentPage.Resources.GetMatch $coverSrc }}
                         {{ $coverSrc = .RelPermalink }}
+                    {{ else }}
+                        {{ $coverSrc = printf "%s/%s" (strings.TrimSuffix ".html" $currentPage.RelPermalink) $coverSrc }}
                     {{ end }}
                 {{ end }}
 
@@ -147,6 +149,8 @@
                                 {{ if not (findRE "^(http|/)" $imgSrc) }}
                                     {{ with $currentPage.Resources.GetMatch $imgSrc }}
                                         {{ $imgSrc = .RelPermalink }}
+                                    {{ else }}
+                                        {{ $imgSrc = printf "%s/%s" (strings.TrimSuffix ".html" $currentPage.RelPermalink) $imgSrc }}
                                     {{ end }}
                                 {{ end }}
                                 <img src="{{ $imgSrc }}" alt="Image" loading="lazy">
@@ -159,6 +163,8 @@
                                 {{ if not (findRE "^(http|/)" $imgSrc) }}
                                     {{ with $currentPage.Resources.GetMatch $imgSrc }}
                                         {{ $imgSrc = .RelPermalink }}
+                                    {{ else }}
+                                        {{ $imgSrc = printf "%s/%s" (strings.TrimSuffix ".html" $currentPage.RelPermalink) $imgSrc }}
                                     {{ end }}
                                 {{ end }}
                                 <div class="gallery-item">
