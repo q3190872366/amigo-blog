@@ -222,6 +222,28 @@ input,textarea,select,button{font-family:inherit;font-size:13px;outline:none}
   #app{grid-template-columns:1fr}#sidebar{position:fixed;left:-240px;top:0;bottom:0;width:220px;z-index:50;transition:left .2s;box-shadow:2px 0 8px rgba(0,0,0,.1)}#sidebar.open{left:0}
   .menu-btn{display:block}.stats,.qa-grid{grid-template-columns:1fr 1fr}.charts{grid-template-columns:1fr}
   #content{padding:12px}.set-grid{grid-template-columns:1fr}
+  /* Topbar mobile */
+  #topbar{padding:8px 12px}
+  #topbar .bc{font-size:13px}
+  .top-actions .btn{padding:5px 8px;font-size:12px}
+  /* Editor info mobile */
+  .ed-info{padding:14px 12px 12px}
+  .ed-info-h{margin-bottom:12px;flex-wrap:wrap;gap:6px}
+  .ed-back{font-size:22px;padding:2px 8px}
+  .ed-info-h h2{font-size:17px}
+  .ed-info-sub{font-size:12px;color:#6b7280;width:100%;margin-left:0;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ed-info-form{padding:14px;border-radius:10px}
+  .ed-info-title{font-size:13px;margin-bottom:10px;padding-bottom:8px}
+  .ed-info-row{padding:8px 0;gap:8px}
+  .ed-info-row>label{font-size:12px;min-width:42px}
+  .ed-info-row input[type=text],.ed-info-row input[type=date]{font-size:16px;padding:8px 4px;min-height:34px}
+  .ed-info-3,.ed-info-2{grid-template-columns:1fr;gap:6px;padding:8px 0}
+  .ed-info-3>div,.ed-info-2>div{padding:6px 0}
+  .ed-info-3>div label,.ed-info-2>div label{font-size:12px;min-width:48px}
+  .ed-info-3>div input,.ed-info-2>div input{font-size:15px;padding:6px 0;min-height:30px}
+  .ed-info-slug .ed-info-tip{display:none}
+  .ed-info-slug input{padding-right:4px}
+  .ed-info-folder{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   /* Editor mobile optimization */
   .ed-body{display:block;grid-template-columns:none;position:relative;flex:1;min-height:0}
   .ed-pane{position:absolute;inset:0;background:var(--card)}
@@ -230,9 +252,11 @@ input,textarea,select,button{font-family:inherit;font-size:13px;outline:none}
   .ed-tb-l{overflow-x:auto;flex-wrap:nowrap;flex:1;padding-bottom:2px;-webkit-overflow-scrolling:touch}
   .ed-tb-l::-webkit-scrollbar{height:2px}
   .ed-tb{padding:6px 8px;position:sticky;top:0;z-index:5;gap:4px}
-  .ed-tb button{padding:8px 12px;min-width:34px;min-height:34px;font-size:16px;border-radius:6px}
-  .ed-tb .ed-img-btn{padding:8px 14px;font-size:15px;min-width:auto}
+  .ed-tb button{padding:8px 10px;min-width:34px;min-height:34px;font-size:15px;border-radius:6px}
+  .ed-tb .ed-img-btn{padding:8px 12px;font-size:14px;min-width:auto;flex-shrink:0}
   .ed-tb .sep{margin:0 2px}
+  .ed-tb-r{flex-shrink:0}
+  .ed-tb select{padding:5px 8px;font-size:12px}
   .ed-meta-r{padding:10px 12px;gap:6px}
   .ed-meta-r input{font-size:17px;padding:12px 14px;border-radius:10px;height:46px}
   .ed-meta-r .btn{padding:8px 12px;font-size:14px;height:40px}
@@ -247,11 +271,23 @@ input,textarea,select,button{font-family:inherit;font-size:13px;outline:none}
   #preview code{font-size:15px;padding:2px 8px}
   #preview pre{padding:14px 16px;font-size:15px}
   #preview table{font-size:15px}
-  .ed-st{padding:10px 12px;font-size:13px}
+  #preview img{max-width:100%;height:auto}
+  .ed-st{padding:8px 10px;font-size:13px;gap:8px}
   .ed-st-l{display:none}
-  .ed-st-r{gap:6px}
-  .ed-st-r .btn{padding:8px 14px;font-size:14px;height:38px}
-  .ed-st-r #st-cnt,.ed-st-r #st-time{font-size:13px;padding:4px 10px}
+  .ed-st-r{gap:6px;flex-wrap:wrap}
+  .ed-st-r .btn{padding:6px 10px;font-size:13px;height:34px}
+  .ed-st-r #st-cnt,.ed-st-r #st-time{font-size:12px;padding:2px 6px}
+  /* Posts list mobile */
+  .plist .pitem{padding:12px 14px}
+  .plist .pitem .title{font-size:15px}
+  .plist .pitem .meta{font-size:12px}
+  .tb{flex-wrap:wrap;gap:6px}
+  .tb input[type=text]{flex:1;min-width:0}
+  .tb select{padding:6px 8px;font-size:13px}
+  .tb .btn{padding:6px 12px;font-size:13px}
+  /* Media mobile */
+  .img-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+  .img-grid .img-card img{height:100px}
   /* Image modal mobile */
   .img-modal-bd{width:100vw;max-height:92vh;border-radius:16px 16px 0 0;align-self:flex-end;margin:0}
   .img-modal-h{padding:14px 16px}
@@ -268,6 +304,16 @@ input,textarea,select,button{font-family:inherit;font-size:13px;outline:none}
   .img-mgr-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px}
   .img-mgr-grid .img-card img{height:100px}
   .img-mgr-grid .img-card .img-info{font-size:12px;padding:6px}
+  /* Login mobile */
+  .login-box{padding:32px 24px;width:340px}
+  .login-box h1{font-size:20px}
+  .login-box input{font-size:16px;height:46px}
+  .login-box button{font-size:16px;height:48px}
+  /* Settings mobile */
+  .set-grid{grid-template-columns:1fr}
+  .field input,.field select,.field textarea{font-size:16px;padding:10px 12px;min-height:42px}
+  .field textarea{min-height:120px}
+}
   .img-mgr-bar input{font-size:15px;padding:9px 12px}
   .img-mgr-bar .btn{padding:7px 12px;font-size:14px}
 }
