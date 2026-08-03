@@ -26,3 +26,4 @@ wrangler-install.log
 
 # 本地回收站
 .recycle/
+*.webp
