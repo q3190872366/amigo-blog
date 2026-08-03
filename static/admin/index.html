@@ -117,13 +117,15 @@
             <button onclick="doFmt('quote')" title="引用">❝</button>
             <span class="sep"></span>
             <button onclick="doFmt('link')" title="链接">🔗</button>
-            <button onclick="document.getElementById('img-pick').click()" title="本地图片">🖼️</button>
-            <button onclick="openImgMgr()" title="图片管理">📁</button>
             <button onclick="doFmt('pre')" title="代码块">{}</button>
             <button onclick="doFmt('hr')" title="分割线">─</button>
             <button onclick="doFmt('table')" title="表格">⊞</button>
           </div>
           <div class="ed-tb-r">
+            <button class="ed-img-btn" onclick="openImgMgr()" title="插入图片">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+              图片
+            </button>
             <select id="ed-mode" onchange="setMode(this.value)" title="视图模式">
               <option value="split">实时预览</option>
               <option value="edit">源码</option>
