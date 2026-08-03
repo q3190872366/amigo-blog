@@ -244,11 +244,18 @@ input,textarea,select,button{font-family:inherit;font-size:13px;outline:none}
   .ed-info-slug .ed-info-tip{display:none}
   .ed-info-slug input{padding-right:4px}
   .ed-info-folder{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  /* Editor mobile optimization */
-  .ed-body{display:block;grid-template-columns:none;position:relative;flex:1;min-height:0}
-  .ed-pane{position:absolute;inset:0;background:var(--card)}
+  /* Editor mobile optimization - 背景统一米色，textarea 撑满 */
+  .ed-info{padding:14px 12px 12px;background:#f5f1e8;flex:0 1 auto;max-height:45vh;overflow-y:auto}
+  .ed-tb,.ed-tabs,.ed-st,.ed-body,.ed-pane,.ed-wrap{background:transparent}
+  .ed-tb{background:var(--card);position:sticky;top:0;z-index:5;padding:6px 8px;gap:4px;flex:0 0 auto}
+  .ed-tabs{background:var(--card);border-bottom:1px solid var(--e);flex:0 0 auto}
+  .ed-body{display:flex;flex-direction:column;flex:1 1 0;min-height:240px;background:#f5f1e8;padding:8px 10px;overflow:hidden}
+  .ed-pane{position:relative;flex:1 1 0;min-height:200px;background:var(--card);border-radius:8px;overflow:hidden}
   .ed-pane:not(.on){display:none}
-  .ed-tabs{display:flex}
+  .ed-wrap{flex:1 1 0;min-height:0;display:flex;background:transparent}
+  .ed-wrap textarea{flex:1 1 0;min-height:200px;background:var(--card);font-size:17px;line-height:1.85;padding:16px;border:none;border-radius:8px;resize:none}
+  #preview{padding:16px 18px;font-size:17px;line-height:1.85;max-width:100%;min-height:200px;background:var(--card);border-radius:8px;overflow-y:auto}
+  .ed-st{flex:0 0 auto;background:var(--card)}
   .ed-tb-l{overflow-x:auto;flex-wrap:nowrap;flex:1;padding-bottom:2px;-webkit-overflow-scrolling:touch}
   .ed-tb-l::-webkit-scrollbar{height:2px}
   .ed-tb{padding:6px 8px;position:sticky;top:0;z-index:5;gap:4px}
@@ -260,9 +267,6 @@ input,textarea,select,button{font-family:inherit;font-size:13px;outline:none}
   .ed-meta-r{padding:10px 12px;gap:6px}
   .ed-meta-r input{font-size:17px;padding:12px 14px;border-radius:10px;height:46px}
   .ed-meta-r .btn{padding:8px 12px;font-size:14px;height:40px}
-  .ed-wrap{height:100%}
-  .ed-wrap textarea{padding:16px;font-size:17px;line-height:1.85;tab-size:2}
-  #preview{padding:16px 18px;font-size:17px;line-height:1.85;max-width:100%}
   #preview h1{font-size:24px;margin:18px 0 12px}#preview h2{font-size:21px;margin:16px 0 10px}
   #preview h3{font-size:19px;margin:12px 0 8px}#preview h4{font-size:17px}
   #preview p,#preview li{font-size:17px;margin:10px 0}
