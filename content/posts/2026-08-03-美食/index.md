@@ -6,3 +6,4 @@ comments: true
 ---
 好吃！
 ![img-msd453t8](https://cdn.jsdelivr.net/gh/q3190872366/amigo-blog@master/static/posts/images/img-msd453t8.jpg)
+![img-msd47dw4](https://cdn.jsdelivr.net/gh/q3190872366/amigo-blog@master/content/posts/2026-08-03-美食/img-msd47dw4.jpg)
