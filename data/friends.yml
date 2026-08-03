@@ -1,0 +1,9 @@
+- name: "Hugo 官网"
+  url: "https://gohugo.io"
+  avatar: "https://gohugo.io/favicon.ico"
+  description: "世界上最快的静态站点生成器"
+
+- name: "Amigo 主题"
+  url: "https://github.com/zqlit/Hugo-Theme-Amigo"
+  avatar: "https://github.com/favicon.ico"
+  description: "仿微信朋友圈的 Hugo 主题"

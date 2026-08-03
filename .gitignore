@@ -1,0 +1,28 @@
+# Hugo 构建产物（Cloudflare Pages 从源码构建，无需提交）
+/public/
+/resources/
+.hugo_build.lock
+
+# EdgeOne 本地配置
+.edgeone/
+
+# 系统/编辑器
+.DS_Store
+Thumbs.db
+*.tmp
+
+# 依赖
+node_modules/
+
+# Wrangler 本地缓存 / 日志
+.wrangler/
+wrangler-install.log
+
+# Functions 依赖锁（仅用于打包，无需入库）
+/package-lock.json
+
+# 独立的 Next.js 后台管理 app（/write/），不属于本 Hugo 博客仓库
+/write/
+
+# 本地回收站
+.recycle/

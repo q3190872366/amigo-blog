@@ -1,0 +1,40 @@
+name: Deploy blog to Cloudflare Pages
+
+# 飞书机器人推送文章后，通过 workflow_dispatch 触发本流程（见 bot-src/index.js → triggerGitHubWorkflow）
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Hugo (extended)
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: '0.128.2'
+          extended: true
+
+      - name: Install Functions dependencies (hono，供 Pages Functions 打包)
+        run: npm install --no-audit --no-fund
+
+      - name: Build site
+        run: hugo --gc --minify
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy --branch main

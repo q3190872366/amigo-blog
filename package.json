@@ -1,0 +1,12 @@
+{
+  "name": "amigo-blog-functions",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloudflare Pages Functions for the Amigo Hugo blog — Feishu sync bot (Hono).",
+  "scripts": {
+    "deploy": "./scripts/deploy.sh"
+  },
+  "dependencies": {
+    "hono": "^4.6.0"
+  }
+}
