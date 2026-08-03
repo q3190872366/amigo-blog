@@ -6,8 +6,10 @@ author: ''
 summary: ''
 cover: ''
 comments: true
-categories: []
-tags: []
+categories:
+  - "[]"
+tags:
+  - "[]"
 ---
 # 新文章
 
