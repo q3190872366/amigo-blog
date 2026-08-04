@@ -1,6 +1,6 @@
 // functions/api/r2/serve.js — Cloudflare Pages Function
 // GET /api/r2/serve?key=xxx   通过 Pages Function 代理 R2 对象
-import { getCreds, signReq, resp } from '../../_r2-util.js';
+import { getCreds, signReq, resp } from '../_r2-util.js';
 
 export async function onRequest(context){
   const { request, env } = context;
