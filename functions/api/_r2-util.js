@@ -50,9 +50,7 @@ async function signReq(method, path, query, extraHeaders, body, creds){
   const cr = [method, path, qp, ch, '', sh, ph].join('\n');
   const sts = ['AWS4-HMAC-SHA256', am, `${date}/${REGION}/${SERVICE}/aws4_request`, await sha256Hex(cr)].join('\n');
   const sk = await signKey(creds.sk, date, REGION);
-  const stsHash = await sha256Hex(sts);
-  const finalSts = ['AWS4-HMAC-SHA256', am, `${date}/${REGION}/${SERVICE}/aws4_request`, stsHash].join('\n');
-  const sig = await hmac(sk, finalSts);
+  const sig = await hmac(sk, sts);
   let sigHex = '';
   for(const x of sig) sigHex += x.toString(16).padStart(2,'0');
   const auth = `AWS4-HMAC-SHA256 Credential=${creds.ak}/${date}/${REGION}/${SERVICE}/aws4_request, SignedHeaders=${sh}, Signature=${sigHex}`;
