@@ -209,6 +209,17 @@ function insImgToEd(name,slug){
 }
 async function mgrUpload(files){
   if(!files||!files.length)return;
+  const mode=getStorageMode();
+  if(mode==='r2'){
+    const status=I('img-mgr-status');
+    for(const file of files){try{
+      status.textContent='上传到 R2: '+file.name;
+      const r2r=await r2Upload(file);
+      status.textContent='已上传 R2: '+r2r.name;
+      insImgToEd(r2r.name,'r2-'+r2r.name);
+    }catch(e){status.textContent='R2 失败: '+e.message}}
+    refreshMgr();return;
+  }
   const status=I('img-mgr-status');
   const mw=parseInt(I('mgr-mw').value)||1600;
   const qv=parseInt(I('mgr-q').value)||82;
@@ -230,6 +241,10 @@ async function mgrUpload(files){
 }
 async function upMany(files,fw){
   if(!files||!files.length)return;
+  const mode=getStorageMode();
+  if(mode==='r2'){
+    await upManyR2(files);return;
+  }
   const webp=fw!==undefined?fw:(I('i-w')?.checked??true);
   const mw=parseInt(I('i-mw')?.value)||1600,q=parseInt(I('i-q')?.value)||82;
   let dir;
@@ -248,6 +263,14 @@ async function upMany(files,fw){
     T('已上传 '+bn,'ok');
   }catch(e){T('上传失败: '+e.message,'err')}}
   if(cv==='media')loadImgs();
+}
+async function upManyR2(files){
+  for(const file of files){try{
+    T('上传到 R2: '+file.name+'...','info');
+    const r2r=await r2Upload(file);
+    if(curP){insAt('!['+r2r.name+']('+r2r.url+')');upPrev()}
+    T('已上传 R2: '+r2r.name,'ok');
+  }catch(e){T('R2 上传失败: '+e.message,'err')}}
 }
 function insAt(t){const e=I('editor'),s=e.selectionStart,ed=e.selectionEnd;e.value=e.value.substring(0,s)+t+e.value.substring(ed);e.selectionStart=e.selectionEnd=s+t.length}
 

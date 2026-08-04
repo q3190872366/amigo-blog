@@ -84,6 +84,19 @@ function swMomImgTab(t){
 // 图片上传
 async function momImgUpload(files){
   if(!files||!files.length)return;
+  const mode=getStorageMode();
+  if(mode==='r2'){
+    const status=I('mom-status');
+    for(const file of files){try{
+      status.textContent='上传到 R2: '+file.name;
+      const r2r=await r2Upload(file);
+      momImgs.push({name:r2r.name,url:r2r.url,kind:'r2'});
+      renderMomImgs();
+      status.textContent='R2: '+r2r.name;
+      onText();
+    }catch(e){status.textContent='R2 失败: '+e.message}}
+    return;
+  }
   const status=I('mom-status');
   for(const file of files){
     try{
@@ -190,6 +203,11 @@ async function publishMoment(){
     // 处理图片：每张都确保在当前动态目录下
     for(let i=0;i<momImgs.length;i++){
       const img=momImgs[i];
+      if(img.kind==='r2'){
+        // R2 图片直接用完整 URL
+        body+='\n\n!['+(img.name.replace(/\.[^.]+$/,''))+']('+img.url+')';
+        continue;
+      }
       const localName=img.kind==='lib'?'img-'+Date.now().toString(36)+i+'-'+img.name:img.name;
       if(img.kind==='lib'){
         // 从媒体库复制到当前目录

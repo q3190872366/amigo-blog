@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>图片管理 - 鹈鹕博客后台</title>
+<script src="head-init.js"></script>
+<link rel="stylesheet" href="admin.css">
+<link rel="stylesheet" href="images.css">
+</head>
+<body>
+<div class="img-app">
+  <header class="img-top">
+    <a href="index.html" class="img-back">← 返回</a>
+    <span class="img-title">图片管理</span>
+    <button class="img-mode-btn" id="img-mode-btn" onclick="toggleStorageMode()" title="切换编辑器/动态的默认上传来源">☁️ R2</button>
+    <span class="img-info" id="img-info">0 张</span>
+  </header>
+  <div class="img-source">
+    <button class="img-src-tab on" data-src="github" onclick="swSource('github')">📁 本地 (GitHub)</button>
+    <button class="img-src-tab" data-src="r2" onclick="swSource('r2')">☁️ Cloudflare R2</button>
+  </div>
+  <div class="img-upload" id="img-upload">
+    <div class="img-upload-card" onclick="document.getElementById('img-file').click()">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      <div class="img-upload-tip">点击或拖拽上传图片</div><div class="img-upload-sub">支持 JPG、PNG、GIF、WebP</div>
+    </div>
+    <input type="file" id="img-file" accept="image/*" multiple style="display:none" onchange="handleUpload(this.files)">
+    <div class="img-upload-opts" id="img-upload-opts">
+      <label><input type="checkbox" id="img-compress" checked> 压缩</label>
+      <label><input type="checkbox" id="img-webp" checked> 转 WebP</label>
+      <label>质量 <input type="number" id="img-quality" value="82" min="10" max="100" style="width:52px"></label>
+    </div>
+  </div>
+  <div class="img-toolbar">
+    <input type="text" id="img-search" placeholder="搜索文件名..." oninput="filterImages()">
+    <button class="btn btn-sm" onclick="loadImages()">↻ 刷新</button>
+  </div>
+  <div class="img-grid" id="img-grid"><div class="img-empty">加载中...</div></div>
+  <div class="img-page" id="img-page"></div>
+</div>
+<div class="img-preview" id="img-preview" onclick="closePreview()">
+  <div class="img-preview-inner" onclick="event.stopPropagation()">
+    <img id="img-preview-img" src=""><div class="img-preview-info" id="img-preview-info"></div>
+  </div>
+</div>
+<div id="toast"></div>
+<script src="admin-core.js"></script>
+<script src="images.js"></script>
+</body>
+</html>

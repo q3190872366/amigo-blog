@@ -6,6 +6,8 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import crypto from 'node:crypto';
+import { uploadBuffer, listObjects, presignedUrl } from './r2-client.mjs';
+const BUCKET = process.env.R2_BUCKET || 'img';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(__dirname, '..');            // scripts/.. => 仓库根
@@ -136,6 +138,16 @@ const server = http.createServer(async (r,res)=>{
     }
     if(p.startsWith('/static/')){
       return await serveRaw(res, decodeURIComponent(p));
+    }
+    // R2 API
+    if(p==='/api/r2/upload'&&r.method==='POST'){
+      try{const{key,content,contentType}=JSON.parse(bodyStr||'{}');if(!key||!content)return sendJson(res,400,{message:'Missing key or content'});const buf=Buffer.from(content,'base64');const r2r=await uploadBuffer(BUCKET,key,buf,contentType||'image/webp');const presigned=presignedUrl(BUCKET,key,86400*7);return sendJson(res,200,{...r2r,presignedUrl:presigned})}catch(e){return sendJson(res,500,{message:e.message})}
+    }
+    if(p==='/api/r2/list'){
+      try{const items=await listObjects(BUCKET,u.searchParams.get('prefix')||'');return sendJson(res,200,items)}catch(e){return sendJson(res,500,{message:e.message})}
+    }
+    if(p==='/api/r2/url'){
+      const key=u.searchParams.get('key')||'';if(!key)return sendJson(res,400,{message:'Missing key'});try{return sendJson(res,200,{url:presignedUrl(BUCKET,key,86400)})}catch(e){return sendJson(res,500,{message:e.message})}
     }
     return await serveStatic(res, p);
   }catch(e){ sendJson(res,500,{message:e.message}); }

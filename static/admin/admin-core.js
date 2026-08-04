@@ -47,6 +47,22 @@ function esc(s){return(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>'
 function nowSlug(){const n=new Date();return n.toISOString().slice(0,10)+'-'+n.toISOString().slice(11,19).replace(/:/g,'')}
 function nowISO(){return new Date().toISOString()}
 
+// ======== R2 存储模式 ========
+function getStorageMode(){try{return JSON.parse(localStorage.getItem('blog_storage')||'{}').mode||'github'}catch(_){return'github'}}
+function setStorageMode(m){localStorage.setItem('blog_storage',JSON.stringify({mode:m}));T('存储模式: '+(m==='r2'?'R2':'GitHub'),'ok')}
+// R2 上传（返回 {name,url}），url 是 7 天 presigned URL，可直接作 <img src>
+async function r2Upload(file,prefix=''){
+  const ext=file.name.split('.').pop().toLowerCase()||'webp';
+  const mime=file.type||('image/'+ext);
+  const bn=(prefix?prefix+'/':'')+'img-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)+'.'+ext;
+  const rd=new FileReader();
+  const content=await new Promise((ok,no)=>{rd.onload=()=>ok(rd.result.split(',')[1]);rd.onerror=no;rd.readAsDataURL(file)});
+  const r=await fetch('/api/r2/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:bn,content,contentType:mime})});
+  const d=await r.json();
+  if(!r.ok)throw new Error(d.message||'R2 upload failed');
+  return {name:bn,url:d.presignedUrl||d.url};
+}
+
 // ======== Image compression ========
 function compImg(file,mw,q,webp){return new Promise((ok,no)=>{const img=new Image();img.onload=()=>{const w=Math.min(img.width,mw),h=img.height*w/img.width;const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);c.toBlob(b=>{const m=webp?'image/webp':file.type;const ext=m==='image/webp'?'.webp':m==='image/png'?'.png':'.jpg';ok({blob:b,ext})},webp?'image/webp':file.type,q/100)};img.onerror=no;img.src=URL.createObjectURL(file)})}
 
