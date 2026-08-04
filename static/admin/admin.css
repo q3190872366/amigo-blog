@@ -56,8 +56,11 @@ input,textarea,select,button{font-family:inherit;font-size:13px;outline:none}
 .chart-box{position:relative;height:240px}
 /* Quick actions */
 .qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.qa{background:#f9fafb;border-radius:8px;padding:14px;cursor:pointer;border:1px solid var(--e);transition:all .15s}
+.qa{background:#f9fafb;border-radius:8px;padding:14px;cursor:pointer;border:1px solid var(--e);transition:all .15s;text-decoration:none;display:block;color:inherit}
 .qa:hover{background:var(--a);color:#fff;border-color:var(--a)}.qa:hover .qa-d{color:rgba(255,255,255,.85)}
+.qa-primary{background:linear-gradient(135deg,#10b981 0%,#059669 100%);color:#fff;border-color:#10b981}
+.qa-primary .qa-d{color:rgba(255,255,255,.85)}
+.qa-primary:hover{background:linear-gradient(135deg,#059669 0%,#047857 100%);border-color:#047857;color:#fff}
 .qa-i{font-size:18px;margin-bottom:6px}
 .qa-t{font-size:13px;font-weight:500}
 .qa-d{font-size:11px;color:var(--m);margin-top:2px}

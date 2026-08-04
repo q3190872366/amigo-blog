@@ -1,0 +1,77 @@
+/* moments.css - 发布动态页面（移动优先） */
+.mom-app{min-height:100dvh;background:var(--bg);display:flex;flex-direction:column;font-size:15px}
+
+/* 顶部栏 */
+.mom-top{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--card);border-bottom:1px solid var(--e);position:sticky;top:0;z-index:10;min-height:48px}
+.mom-cancel{background:none;border:none;font-size:15px;color:var(--t);cursor:pointer;padding:6px 8px;-webkit-tap-highlight-color:transparent}
+.mom-title{font-size:16px;font-weight:600;color:var(--t)}
+.mom-publish{background:var(--g);color:#fff;border:none;padding:7px 18px;border-radius:6px;font-size:14px;font-weight:500;cursor:pointer;min-width:72px;transition:all .15s}
+.mom-publish:not(:disabled):hover{background:#16a34a}
+.mom-publish:disabled{background:#e5e7eb;color:#9ca3af;cursor:not-allowed}
+
+/* 工具栏 */
+.mom-tb{display:flex;align-items:center;gap:2px;padding:6px 10px;background:var(--card);border-bottom:1px solid var(--e);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.mom-tb::-webkit-scrollbar{height:2px}
+.mom-tb button{padding:6px 10px;border:none;background:transparent;cursor:pointer;border-radius:4px;color:var(--t);font-size:14px;line-height:1;min-width:30px;flex-shrink:0;min-height:30px}
+.mom-tb button:hover{background:#f3f4f6}
+.mom-tb button:active{background:#e5e7eb}
+.mom-tb .sep{width:1px;background:var(--e);margin:0 6px;height:18px;flex-shrink:0}
+
+/* 正文 */
+.mom-body{background:var(--card);padding:14px 16px;flex-shrink:0}
+.mom-body textarea{width:100%;min-height:160px;border:none;background:transparent;font-size:16px;line-height:1.7;color:var(--t);resize:none;outline:none;font-family:inherit;display:block}
+.mom-body textarea::placeholder{color:#c4c4c4}
+.mom-meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid #f3f4f6}
+.mom-cnt{font-size:12px;color:var(--m)}
+.mom-cnt.warn{color:var(--o)}
+.mom-topic{padding:5px 10px;border:1px solid var(--e);border-radius:6px;background:var(--card);font-size:13px;color:var(--t);cursor:pointer}
+
+/* 图片区 */
+.mom-images{background:var(--card);padding:14px 16px;border-top:8px solid var(--bg)}
+.mom-img-tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.mom-img-tabs::-webkit-scrollbar{height:0}
+.mom-img-tab{padding:6px 12px;border-radius:16px;font-size:13px;color:var(--m);background:#f3f4f6;cursor:pointer;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.mom-img-tab.on{background:var(--g);color:#fff}
+.mom-img-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px}
+.mom-img-add{display:flex;align-items:center;justify-content:center;aspect-ratio:1;background:#f9fafb;border:1.5px dashed #d1d5db;border-radius:8px;cursor:pointer;color:#9ca3af;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.mom-img-add:hover{border-color:var(--g);color:var(--g);background:#f0fdf4}
+.mom-img-item{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:#f3f4f6}
+.mom-img-item img{width:100%;height:100%;object-fit:cover;display:block}
+.mom-img-item .del{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0}
+.mom-img-item .del:hover{background:rgba(0,0,0,.75)}
+
+/* 附加操作 */
+.mom-actions{background:var(--card);border-top:8px solid var(--bg);margin-bottom:env(safe-area-inset-bottom)}
+.mom-action{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #f3f4f6;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s}
+.mom-action:last-child{border-bottom:none}
+.mom-action:hover,.mom-action:active{background:#f9fafb}
+.mom-action span:first-child{font-size:15px;color:var(--t)}
+.mom-action .arr{color:#c4c4c4;font-size:20px;line-height:1}
+
+/* 状态 */
+.mom-status{padding:12px 16px;font-size:13px;color:var(--m);text-align:center;min-height:20px}
+
+/* 媒体库弹窗 */
+.mom-lib{display:none;position:fixed;inset:0;z-index:200;align-items:flex-end;justify-content:center}
+.mom-lib.on{display:flex}
+.mom-lib-bg{position:absolute;inset:0;background:rgba(0,0,0,.5);animation:fadeIn .15s ease}
+.mom-lib-bd{position:relative;background:var(--card);border-radius:16px 16px 0 0;width:100vw;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;animation:slideUp .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mom-lib-h{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--e)}
+.mom-lib-h span{font-size:16px;font-weight:600}
+.mom-lib-h button{background:none;border:none;font-size:18px;cursor:pointer;color:var(--t);padding:4px 8px}
+.mom-lib-search{display:flex;gap:8px;padding:10px 16px;border-bottom:1px solid var(--e)}
+.mom-lib-search input{flex:1;padding:7px 12px;border:1px solid var(--e);border-radius:6px;font-size:14px;background:#f9fafb}
+.mom-lib-search button{padding:7px 14px;border:1px solid var(--e);border-radius:6px;background:var(--card);cursor:pointer;font-size:13px}
+.mom-lib-grid{flex:1;overflow-y:auto;padding:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;-webkit-overflow-scrolling:touch}
+.mom-lib-grid .lib-item{aspect-ratio:1;border-radius:6px;overflow:hidden;cursor:pointer;background:#f3f4f6;position:relative}
+.mom-lib-grid .lib-item img{width:100%;height:100%;object-fit:cover;display:block}
+.mom-lib-grid .lib-item .nm{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.6));color:#fff;font-size:10px;padding:12px 4px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* 桌面端 - 居中卡片 */
+@media(min-width:768px){
+  body{background:var(--bg)}
+  .mom-app{max-width:560px;margin:0 auto;background:var(--bg);min-height:100dvh}
+  .mom-top{position:sticky;top:0}
+}
