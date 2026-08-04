@@ -17,19 +17,24 @@
 {{- end -}}
 {{- $style := .Get "style" -}}
 
-<div class="live-photo"{{ with $style }}{{ printf " style=%q" (. | safeCSS) | safeHTMLAttr }}{{ end }}>
-  <img class="live-photo-poster" src="{{ $image }}" alt="{{ $alt }}" loading="lazy" data-keep="1" no-view>
+<div class="live-photo"{{ with $style }}{{ printf " style=%q" (. | safeCSS) | safeHTMLAttr }}{{ end }} onclick="openLivePhotoLightbox(event)">
+  <img class="live-photo-poster" src="{{ $image }}" alt="{{ $alt }}" loading="lazy">
   <video class="live-photo-video" data-src="{{ $video }}" poster="{{ $image }}" muted playsinline loop preload="metadata" aria-label="{{ $alt }}"></video>
   <div class="live-photo-controls-group">
-    <button type="button" class="live-photo-control-btn live-photo-toggle-btn" data-state="static" aria-label="Toggle Live Photo">
+    <button type="button" class="live-photo-control-btn live-photo-toggle-btn" data-state="static" aria-label="Toggle Live Photo" onclick="event.stopPropagation()">
       <i class="icon-live" aria-hidden="true"></i>
       <span class="live-photo-live-label">实况</span>
     </button>
-    <button type="button" class="live-photo-control-btn live-photo-mute-btn" data-muted="true" aria-label="Toggle Mute">
+    <button type="button" class="live-photo-control-btn live-photo-mute-btn" data-muted="true" aria-label="Toggle Mute" onclick="event.stopPropagation()">
       <i class="ri-volume-up-line live-photo-mute-icon icon-unmuted" aria-hidden="true"></i>
       <i class="ri-volume-mute-line live-photo-mute-icon icon-muted" aria-hidden="true"></i>
       <span class="live-photo-mute-label">静音</span>
     </button>
   </div>
+  <button class="live-photo-expand-btn" onclick="event.stopPropagation();openLivePhotoLightbox(event,this)" aria-label="放大" title="查看原图">⤡</button>
   <div class="warning" style="opacity: 0;"></div>
+</div>
+<div class="live-photo-lightbox" id="live-photo-lightbox" onclick="closeLivePhotoLightbox()">
+  <button class="live-photo-lightbox-close" onclick="closeLivePhotoLightbox()">✕</button>
+  <img class="live-photo-lightbox-img" id="live-photo-lightbox-img" src="" alt="">
 </div>

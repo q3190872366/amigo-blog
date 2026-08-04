@@ -1576,6 +1576,28 @@ function initLivePhotoShortcodes() {
     });
 }
 
+// ===== Live Photo Lightbox =====
+function openLivePhotoLightbox(e, btn) {
+    if (btn) e.stopPropagation();
+    var wrapper = e.currentTarget || e.target.closest('.live-photo');
+    if (!wrapper) return;
+    var poster = wrapper.querySelector('.live-photo-poster');
+    if (!poster || !poster.src) return;
+    var lb = document.getElementById('live-photo-lightbox');
+    var img = document.getElementById('live-photo-lightbox-img');
+    if (!lb || !img) return;
+    img.src = poster.src;
+    img.alt = poster.alt || '';
+    lb.classList.add('on');
+    document.body.style.overflow = 'hidden';
+}
+function closeLivePhotoLightbox() {
+    var lb = document.getElementById('live-photo-lightbox');
+    if (!lb) return;
+    lb.classList.remove('on');
+    document.body.style.overflow = '';
+}
+
 function initDanmaku() {
     const root = document.getElementById('danmaku-root');
     if (!root || !window.amigoConfig) return;
