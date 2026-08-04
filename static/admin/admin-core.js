@@ -8,7 +8,7 @@ const T=(m,t)=>{const e=I('toast');if(!e)return;e.textContent=m;e.className=t;cl
 let P='',O='',R='',B='master',PP='content/posts';
 const LOCAL=(location.port==='8787')||new URLSearchParams(location.search).get('local')==='1';
 const CDN='https://cdn.jsdelivr.net/gh/q3190872366/amigo-blog@master';
-const R2_PUBLIC='https://amigo-blog.pages.dev/r2'; // 通过 Cloudflare Pages 永久代理
+// R2 上传后返回 7 天 presigned URL（用 R2_FUNCTION 通过 Pages Function 生成）
 
 // ======== Auth ========
 function loadAuth(){
@@ -51,7 +51,7 @@ function nowISO(){return new Date().toISOString()}
 // ======== R2 存储模式 ========
 function getStorageMode(){try{return JSON.parse(localStorage.getItem('blog_storage')||'{}').mode||'github'}catch(_){return'github'}}
 function setStorageMode(m){localStorage.setItem('blog_storage',JSON.stringify({mode:m}));T('存储模式: '+(m==='r2'?'R2':'GitHub'),'ok')}
-// R2 上传（返回 {name,url}），url 是永久公开链接
+// R2 上传（返回 {name,url}），url 是 7 天 presigned URL（通过 /api/r2/url 生成）
 async function r2Upload(file,prefix=''){
   const ext=file.name.split('.').pop().toLowerCase()||'webp';
   const mime=file.type||('image/'+ext);
@@ -61,7 +61,9 @@ async function r2Upload(file,prefix=''){
   const r=await fetch('/api/r2/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:bn,content,contentType:mime})});
   const d=await r.json();
   if(!r.ok)throw new Error(d.message||'R2 upload failed');
-  return {name:bn,url:R2_PUBLIC+'/'+bn};
+  // 立即获取 presigned URL
+  const u=await fetch('/api/r2/url?key='+encodeURIComponent(bn)).then(x=>x.json());
+  return {name:bn,url:u.url};
 }
 
 // ======== Image compression ========
