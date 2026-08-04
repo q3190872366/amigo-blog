@@ -67,6 +67,8 @@ uglyURLs = true
   # ---------------------------------------------------------------------------------------
   enablePjax = true
   enableLightbox = true
+  showLocation = true
+  showTags = true
 
 [markup]
   [markup.highlight]

@@ -100,7 +100,7 @@ async function momImgUpload(files){
   if(!files||!files.length)return;
   const mode=getStorageMode();
   if(mode==='r2'){
-    const status=I('mom-status');
+    const status={set textContent(v){momTopBar(v)}};
     for(const file of files){try{
       status.textContent='上传到 R2: '+file.name;
       const r2r=await r2Upload(file);
@@ -111,7 +111,7 @@ async function momImgUpload(files){
     }catch(e){status.textContent='R2 失败: '+e.message}}
     return;
   }
-  const status=I('mom-status');
+  const status={set textContent(v){momTopBar(v)}};
   for(const file of files){
     try{
       status.textContent='上传中: '+file.name;
@@ -134,7 +134,7 @@ async function momImgUpload(files){
 async function momVideoUpload(files){
   if(!files||!files.length)return;
   const mode=getStorageMode();
-  const status=I('mom-status');
+  const status={set textContent(v){momTopBar(v)}};
   for(const file of files){
     try{
       status.textContent='上传视频: '+file.name;
@@ -165,7 +165,7 @@ async function momVideoUpload(files){
 // 实况图上传：自动配对 image + video（同 basename 不同后缀）
 async function momLiveUpload(files){
   if(!files||!files.length)return;
-  const status=I('mom-status');
+  const status={set textContent(v){momTopBar(v)}};
   // Step 1: 尝试 Android 单文件 Motion Photo 提取
   const groups = new Map();
   for(const f of files){

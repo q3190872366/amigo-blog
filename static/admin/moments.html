@@ -10,6 +10,9 @@
 </head>
 <body>
 
+<!-- 顶部状态条（图片上传进度等显示在这里） -->
+<div class="mom-topbar" id="mom-topbar"></div>
+
 <div class="mom-app">
   <!-- 顶部栏 -->
   <header class="mom-top">
@@ -69,8 +72,8 @@
       <span>📷 从媒体库导入</span>
       <span class="arr">›</span>
     </div>
-    <div class="mom-action" onclick="alert('所在位置：开发中')">
-      <span>📍 所在位置</span>
+    <div class="mom-action" id="mom-loc" onclick="pickLocation()">
+      <span>📍 <span id="mom-loc-text">所在位置</span></span>
       <span class="arr">›</span>
     </div>
     <div class="mom-action" onclick="alert('添加音乐：开发中')">
@@ -79,8 +82,8 @@
     </div>
   </div>
 
-  <!-- 状态 -->
-  <div class="mom-status" id="mom-status"></div>
+  <!-- 兼容旧状态条位置 -->
+  <div class="mom-status" id="mom-status" style="display:none"></div>
 </div>
 
 <!-- 媒体库选择器 -->
@@ -98,6 +101,22 @@
     <div class="mom-lib-grid" id="mom-lib-grid">
       <div class="empty" style="grid-column:1/-1;padding:20px;text-align:center;color:var(--m)">加载中...</div>
     </div>
+  </div>
+</div>
+
+<!-- 位置选择器 -->
+<div class="mom-loc-picker" id="mom-loc-picker">
+  <div class="mom-loc-bg" onclick="closeLocPicker()"></div>
+  <div class="mom-loc-bd">
+    <div class="mom-loc-h">
+      <span>选择位置</span>
+      <button onclick="closeLocPicker()">✕</button>
+    </div>
+    <div class="mom-loc-row">
+      <input type="text" id="mom-loc-input" placeholder="输入位置名，例如 武汉·东湖" />
+      <button class="mom-loc-gps" onclick="pickByGPS()" title="使用当前位置">📍 GPS</button>
+    </div>
+    <button class="mom-loc-save" onclick="saveLocation()">确定</button>
   </div>
 </div>
 

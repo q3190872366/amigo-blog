@@ -13,16 +13,31 @@ const CDN='https://cdn.jsdelivr.net/gh/q3190872366/amigo-blog@master';
 // ======== Auth ========
 function loadAuth(){
   try{
-    const s=localStorage.getItem('blog_adm3');
+    // 同时支持 localStorage + sessionStorage 双备份
+    let s=localStorage.getItem('blog_adm3');
+    if(!s)s=sessionStorage.getItem('blog_adm3');
+    if(s){const d=JSON.parse(s);P=d.pat||'';O=d.owner||'q3190872366';R=d.repo||'amigo-blog';B=d.branch||'master';PP=d.path||'content/posts';return true}
+    // 兼容旧版 blog_adm2
+    s=localStorage.getItem('blog_adm2');
+    if(!s)s=sessionStorage.getItem('blog_adm2');
     if(s){const d=JSON.parse(s);P=d.pat||'';O=d.owner||'q3190872366';R=d.repo||'amigo-blog';B=d.branch||'master';PP=d.path||'content/posts';return true}
   }catch(_){}
   return false;
+}
+function saveAuth(d){
+  try{
+    localStorage.setItem('blog_adm3',JSON.stringify(d));
+    sessionStorage.setItem('blog_adm3',JSON.stringify(d));
+  }catch(_){}
 }
 function requireAuth(){
   if(!loadAuth()){location.href='index.html';return false}
   return true;
 }
-function doLogout(){localStorage.removeItem('blog_adm3');location.href='index.html'}
+function doLogout(){
+  try{localStorage.removeItem('blog_adm3');sessionStorage.removeItem('blog_adm3')}catch(_){}
+  location.href='index.html';
+}
 
 // ======== GitHub API ========
 function gh(p,o={}){

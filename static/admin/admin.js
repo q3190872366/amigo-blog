@@ -1,10 +1,6 @@
 // ======== State ========
-let P='',O='',R='',B='master',PP='content/posts';
+// P,O,R,B,PP,CDN,LOCAL,I,T 已在 admin-core.js 中定义
 let posts=[],imgs=[],curP=null,cv='dashboard';
-const CDN='https://cdn.jsdelivr.net/gh/q3190872366/amigo-blog@master';
-const LOCAL=(location.port==='8787')||new URLSearchParams(location.search).get('local')==='1';
-const I=(id)=>document.getElementById(id);
-const T=(m,t)=>{const e=I('toast');e.textContent=m;e.className=t;clearTimeout(e._t);e._t=setTimeout(()=>e.className='',2500)};
 
 // ======== Init ========
 function init(){
@@ -17,7 +13,7 @@ function doLogin(){
   P=I('li-token').value.trim();O=I('li-owner').value.trim();R=I('li-repo').value.trim();
   if(!LOCAL&&(!P||!O||!R)){T('请填写完整','err');return}
   if(LOCAL){O=O||'local';R=R||'local'}
-  localStorage.setItem('blog_adm3',JSON.stringify({pat:P,owner:O,repo:R,branch:B,path:PP}));
+  saveAuth({pat:P,owner:O,repo:R,branch:B,path:PP});
   I('login').style.display='none';I('app').classList.add('open');
   loadDash();
 }
@@ -106,21 +102,27 @@ async function loadPosts(){
     for(const it of data){if(it.type!=='dir')continue;try{
       const f=await gh('/contents/'+ghp(PP+'/'+it.name+'/index.md'));
       const raw=b64d(f.content),fm=parseFM(raw);
-      const c=fm.categories||[],t=fm.tags||[];posts.push({slug:it.name,title:fm.title||it.name,date:fm.date||'',sha:f.sha,draft:fm.draft,cats:Array.isArray(c)?c:[c].filter(Boolean),tags:Array.isArray(t)?t:[t].filter(Boolean),raw});
-    }catch(_){posts.push({slug:it.name,title:it.name,date:'',sha:null,draft:false,cats:[],tags:[],raw:''})}}
+      const c=fm.categories||[],t=fm.tags||[];posts.push({slug:it.name,title:fm.title||it.name,date:fm.date||'',sha:f.sha,draft:fm.draft,type:fm.type||'post',location:fm.location||'',cats:Array.isArray(c)?c:[c].filter(Boolean),tags:Array.isArray(t)?t:[t].filter(Boolean),raw});
+    }catch(_){posts.push({slug:it.name,title:it.name,date:'',sha:null,draft:false,type:'post',location:'',cats:[],tags:[],raw:''})}}
     posts.sort((a,b)=>(b.date||'').localeCompare(a.date||''));renderPosts();
   }catch(e){I('p-list').innerHTML='<div class="empty">加载失败: '+e.message+'</div>'}
 }
 function renderPosts(){
-  const q=(I('p-search').value||'').toLowerCase(),f=I('p-filter').value;
-  const fl=posts.filter(p=>{if(q&&!p.title.toLowerCase().includes(q)&&!p.slug.toLowerCase().includes(q))return 0;if(f==='draft'&&!p.draft)return 0;if(f==='pub'&&p.draft)return 0;return 1});
-  I('p-list').innerHTML=fl.length?fl.map(p=>'<div class="pitem" onclick="editP(\''+p.slug+'\')"><div><div class="title">'+esc(p.title)+'</div><div class="meta">'+(p.date?p.date.slice(0,10):'')+(p.cats.length?' · '+p.cats.join(', '):'')+(p.tags.length?' · '+p.tags.join(', '):'')+'</div></div><span class="badge '+(p.draft?'draft':'pub')+'">'+(p.draft?'草稿':'已发布')+'</span></div>').join(''):'<div class="empty">没有文章</div>';
+  const q=(I('p-search').value||'').toLowerCase(),f=I('p-filter').value,tf=I('p-type-filter')?.value||'all';
+  const fl=posts.filter(p=>{if(q&&!p.title.toLowerCase().includes(q)&&!p.slug.toLowerCase().includes(q))return 0;if(f==='draft'&&!p.draft)return 0;if(f==='pub'&&p.draft)return 0;if(f==='moment'&&p.type!=='moment')return 0;if(tf==='post'&&p.type==='moment')return 0;if(tf==='moment'&&p.type!=='moment')return 0;return 1});
+  I('p-list').innerHTML=fl.length?fl.map(p=>{
+    const isMom=p.type==='moment';
+    const icon=isMom?'💬':'📝';
+    const onclk=isMom?`editMom('${p.slug}')`:`editP('${p.slug}')`;
+    return `<div class="pitem" onclick="${onclk}"><div><div class="title">${icon} ${esc(p.title||p.slug)}</div><div class="meta">${p.date?p.date.slice(0,10):''}${(p.tags.length?' · '+p.tags.join(', '):'')}${(p.location?' · 📍 '+p.location:'')}</div></div><span class="badge ${(p.draft?'draft':'pub')}">${(isMom?'动态':p.draft?'草稿':'已发布')}</span></div>`;
+  }).join(''):'<div class="empty">没有内容</div>';
 }
 function fmDefault(){const n=new Date();return {title:'新文章',slug:'',date:n.toISOString().slice(0,10),draft:true,author:'',summary:'',cover:'',comments:true,categories:[],tags:[]}}
 function fillFmForm(fm){I('em-t').value=fm.title||'';I('em-slug').value=fm.slug||'';I('em-date').value=(fm.date||'').slice(0,10);I('em-author').value=fm.author||'';I('em-cats').value=Array.isArray(fm.categories)?fm.categories.join(','):(fm.categories||'');I('em-tags').value=Array.isArray(fm.tags)?fm.tags.join(','):(fm.tags||'');I('em-summary').value=fm.summary||'';I('em-sub').textContent=fm.title||'新文章';updateFolder()}
 function updateFolder(){const slug=(I('em-slug').value||'').trim()||(I('em-t').value||'新文章').replace(/[^\w一-龥]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase();const d=(I('em-date').value||new Date().toISOString().slice(0,10));I('em-folder').textContent=d+'-'+slug}
 function syncFm(){updateFolder();const fm=[];const t=I('em-t').value.trim();if(t)fm.push('title: "'+t.replace(/"/g,'\\"')+'"');const s=I('em-slug').value.trim();if(s)fm.push('slug: "'+s+'"');const d=I('em-date').value;if(d)fm.push('date: '+d+'T00:00:00+08:00');const a=I('em-author').value.trim();if(a)fm.push('author: "'+a+'"');const sm=I('em-summary').value.trim();if(sm)fm.push('summary: "'+sm.replace(/"/g,'\\"')+'"');const c=I('em-cats').value.split(',').map(x=>x.trim()).filter(Boolean);if(c.length)fm.push('categories: ['+c.map(x=>'"'+x+'"').join(', ')+']');const tg=I('em-tags').value.split(',').map(x=>x.trim()).filter(Boolean);if(tg.length)fm.push('tags: ['+tg.map(x=>'"'+x+'"').join(', ')+']');fm.push('draft: true');fm.push('comments: true');I('em-fm').value=fm.join('\n');I('em-sub').textContent=t||'新文章'}
 function newPost(){curP=null;I('editor').value='';fillFmForm(fmDefault());syncFm();I('preview').innerHTML='';go('editor');swPane('edit');upPrev();upCnt()}
+function editMom(slug){location.href='moments.html?edit='+encodeURIComponent(slug)}
 function editP(slug){const p=posts.find(x=>x.slug===slug);if(!p)return;curP=p;const m=p.raw.match(/^---\n([\s\S]*?)\n---/);I('editor').value=m?p.raw.replace(/^---\n[\s\S]*?\n---\n/,''):p.raw;const fm=m?parseFM(p.raw):{};fillFmForm(fm);syncFm();go('editor');swPane('edit');upPrev();upCnt()}
 async function upPrev(){await needM();let html=marked.parse(I('editor').value||'');if(LOCAL){html=html.replace(/<img([^>]*)src="([^"]+)"([^>]*)>/g,(w,a,src,c)=>{if(/^(https?:)?\/\//.test(src)||src.startsWith('/'))return w;const fb=curP?'/static/posts/images/'+src:'';const base=curP?'/api/raw/content/posts/'+curP.slug+'/'+src:'/static/posts/images/'+src;return fb?'<img'+a+'src="'+base+'" data-fb="'+fb+'" onerror="if(this.dataset.fb&&!this.dataset.t){this.dataset.t=1;this.src=this.dataset.fb}"'+c+'>':'<img'+a+'src="'+base+'"'+c+'>'});}I('preview').innerHTML=html;if(typeof upCnt==='function')upCnt()}
 function bFM(){const fm=I('em-fm').value.trim();if(!fm)return'---\n---\n\n';return '---\n'+fm+'\n---\n'}
