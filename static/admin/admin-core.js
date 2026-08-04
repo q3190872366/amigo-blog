@@ -49,7 +49,7 @@ function nowSlug(){const n=new Date();return n.toISOString().slice(0,10)+'-'+n.t
 function nowISO(){return new Date().toISOString()}
 
 // ======== R2 存储模式 ========
-function getStorageMode(){try{return JSON.parse(localStorage.getItem('blog_storage')||'{}').mode||'github'}catch(_){return'github'}}
+function getStorageMode(){try{return JSON.parse(localStorage.getItem('blog_storage')||'{}').mode||'r2'}catch(_){return'r2'}}
 function setStorageMode(m){localStorage.setItem('blog_storage',JSON.stringify({mode:m}));T('存储模式: '+(m==='r2'?'R2':'GitHub'),'ok')}
 // R2 上传（返回 {name,url}），url 是 7 天 presigned URL（通过 /api/r2/url 生成）
 async function r2Upload(file,prefix=''){
