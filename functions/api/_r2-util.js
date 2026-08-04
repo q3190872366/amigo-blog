@@ -17,7 +17,12 @@ function getCreds(env){
   };
 }
 
-function sha256Hex(d){return crypto.subtle.digest('SHA-256', new TextEncoder().encode(d)).then(b=>{let s='';const u=new Uint8Array(b);for(const x of u)s+=x.toString(16).padStart(2,'0');return s})}
+function sha256Hex(d){
+  const buf = d instanceof ArrayBuffer ? d : (ArrayBuffer.isView(d) ? d.buffer : new TextEncoder().encode(d));
+  return crypto.subtle.digest('SHA-256', buf).then(b=>{
+    let s='';const u=new Uint8Array(b);for(const x of u)s+=x.toString(16).padStart(2,'0');return s;
+  });
+}
 
 async function hmac(key, data){
   const raw = key instanceof ArrayBuffer ? key : (key.buffer instanceof ArrayBuffer ? key.buffer : (typeof key === 'string' ? new TextEncoder().encode(key) : key));

@@ -19,7 +19,7 @@ export async function onRequest(context){
     const bytes = new Uint8Array(bin.length);
     for(let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
     const path = `/${creds.bucket}/${encodeURIComponent(key)}`;
-    const h = await signReq('PUT', path, '', { 'content-type': contentType || 'image/webp', 'x-amz-acl': 'public-read' }, bin, creds);
+    const h = await signReq('PUT', path, '', { 'content-type': contentType || 'image/webp', 'x-amz-acl': 'public-read' }, bytes, creds);
     const r = await fetch(`https://${creds.endpoint}${path}`, { method:'PUT', headers:h, body: bytes });
     if(!r.ok) return resp(r.status, { message: `R2 upload failed: ${r.status}` });
 
