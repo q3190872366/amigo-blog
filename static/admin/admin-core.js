@@ -61,9 +61,8 @@ async function r2Upload(file,prefix=''){
   const r=await fetch('/api/r2/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:bn,content,contentType:mime})});
   const d=await r.json();
   if(!r.ok)throw new Error(d.message||'R2 upload failed');
-  // 立即获取 presigned URL
-  const u=await fetch('/api/r2/url?key='+encodeURIComponent(bn)).then(x=>x.json());
-  return {name:bn,url:u.url};
+  // 使用干净的代理 URL（无 & 符号，不会被 Hugo 编码破坏）
+  return {name:bn,url:'/api/r2/img?key='+encodeURIComponent(bn)};
 }
 
 // ======== Image compression ========

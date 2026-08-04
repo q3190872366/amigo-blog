@@ -338,17 +338,16 @@ async function publishMoment(){
         continue;
       }
       if(img.kind==='livephoto'){
-        // 实况图：用主题的 livephoto shortcode
+        // 实况图：用主题的 livephoto shortcode（URL 不 esc，避免 & 被双编码）
         if(img.vidUrl){
-          body+='\n\n{{< livephoto image="'+esc(img.imgUrl)+'" video="'+esc(img.vidUrl)+'" >}}';
+          body+='\n\n{{< livephoto image="'+img.imgUrl+'" video="'+img.vidUrl+'" >}}';
         }else{
-          body+='\n\n!['+esc(img.name)+']('+esc(img.imgUrl)+')';
+          body+='\n\n!['+esc(img.name)+']('+img.imgUrl+')';
         }
         continue;
       }
       if(img.kind==='r2-video'||img.kind==='new-video'){
-        // 短视频：用 video shortcode
-        body+='\n\n{{< video src="'+esc(img.url)+'" >}}';
+        body+='\n\n{{< video src="'+img.url+'" >}}';
         continue;
       }
       const localName=img.kind==='lib'?'img-'+Date.now().toString(36)+i+'-'+img.name:img.name;

@@ -5,17 +5,7 @@ function syncModeBtn(){const m=getStorageMode();const b=I('img-mode-btn');b.text
 function toggleStorageMode(){const m=getStorageMode()==='r2'?'github':'r2';setStorageMode(m);syncModeBtn();loadImages()}
 function swSource(s){curSource=s;document.querySelectorAll('.img-src-tab').forEach(x=>x.classList.toggle('on',x.dataset.src===s));I('img-info').textContent='0 张';loadImages()}
 async function loadImages(){I('img-grid').innerHTML='<div class="img-empty">加载中...</div>';I('img-info').textContent='0 张';allImgs=[];try{if(curSource==='r2'){await loadR2()}else{await loadGithub()}filterImages()}catch(e){I('img-grid').innerHTML='<div class="img-empty">加载失败: '+e.message+'</div>'}}
-async function loadR2(){
-  const r=await fetch('/api/r2/list'),d=await r.json();
-  if(!r.ok)throw new Error(d.message||('HTTP '+r.status));
-  if(!Array.isArray(d))throw new Error('R2 返回格式错误');
-  // 并发获取所有 presigned URL
-  const urls = await Promise.all(d.map(async x=>{
-    try{const u=await fetch('/api/r2/url?key='+encodeURIComponent(x.key)).then(x=>x.json());return u.url;}
-    catch(_){return ''}
-  }));
-  allImgs = d.map((x,i)=>({name:x.key.split('/').pop()||x.key,key:x.key,url:urls[i],size:x.size,source:'r2'}));
-}
+async function loadR2(){const r=await fetch('/api/r2/list'),d=await r.json();if(!r.ok)throw new Error(d.message||('HTTP '+r.status));if(!Array.isArray(d))throw new Error('R2 返回格式错误');allImgs=d.map(x=>({name:x.key.split('/').pop()||x.key,key:x.key,url:'/api/r2/img?key='+encodeURIComponent(x.key),size:x.size,source:'r2'}))}
 async function loadGithub(){
   try{
     const f=await gh('/contents/static/posts/images');
