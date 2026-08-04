@@ -20,7 +20,8 @@ function getCreds(env){
 function sha256Hex(d){return crypto.subtle.digest('SHA-256', new TextEncoder().encode(d)).then(b=>{let s='';const u=new Uint8Array(b);for(const x of u)s+=x.toString(16).padStart(2,'0');return s})}
 
 async function hmac(key, data){
-  const k = await crypto.subtle.importKey('raw', key instanceof ArrayBuffer ? key : new TextEncoder().encode(key), {name:'HMAC',hash:'SHA-256'}, false, ['sign']);
+  const raw = key instanceof ArrayBuffer ? key : (key.buffer instanceof ArrayBuffer ? key.buffer : (typeof key === 'string' ? new TextEncoder().encode(key) : key));
+  const k = await crypto.subtle.importKey('raw', raw, {name:'HMAC',hash:'SHA-256'}, false, ['sign']);
   const sig = await crypto.subtle.sign('HMAC', k, new TextEncoder().encode(data));
   return new Uint8Array(sig);
 }
