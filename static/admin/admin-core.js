@@ -65,24 +65,37 @@ async function r2Upload(file,prefix=''){
   return {name:bn,url:'/api/r2/img?key='+encodeURIComponent(bn)};
 }
 
-// ======== Android Motion Photo 提取（客户端从 JPEG 分离 MP4） ========
-// 参考 MotionFlow (github.com/DejavuMoe/MotionFlow)
+// ======== Android Motion Photo 提取 ========
+// 参考 motion-live-photo (github.com/flashlab/motion-live-photo)  
 async function extractMotionPhoto(file){
   return new Promise((resolve)=>{
     const rd=new FileReader();
     rd.onload=(e)=>{
       try{
-        const buf=e.target.result,bytes=new Uint8Array(buf);
+        const buf=e.target.result,bytes=new Uint8Array(buf),n=bytes.length;
         let vo=null;
-        for(let i=bytes.length-8;i>0;i--){
-          if(bytes[i]===0x66&&bytes[i+1]===0x74&&bytes[i+2]===0x79&&bytes[i+3]===0x70){
-            const off=i-4,v=new DataView(buf,off,4),len=v.getUint32(0,false);
-            if(len>0&&len<buf.byteLength){vo=off;break}
+        // 1. 解析 XMP 元数据（OPPO/小米/Google 通用）
+        const text=new TextDecoder('utf-8').decode(bytes);
+        const xmpS=text.indexOf('<x:xmpmeta');
+        if(xmpS!==-1){
+          const xmp=text.slice(xmpS,text.indexOf('</x:xmpmeta>')+12);
+          let mLen=null;
+          for(const m of xmp.matchAll(/(?:Item:Length|MicroVideoOffset|VideoLength)(?:=|>)(\d+)/gi))
+            {if(!mLen)mLen=parseInt(m[1])}
+          if(mLen&&mLen>0&&mLen<n)vo=n-mLen;
+        }
+        // 2. 回退：搜索 ftyp MP4 头
+        if(!vo||vo<=0){
+          for(let i=n-8;i>0;i--){
+            if(bytes[i]===0x66&&bytes[i+1]===0x74&&bytes[i+2]===0x79&&bytes[i+3]===0x70){
+              const off=i-4,v=new DataView(buf,off,4),len=v.getUint32(0,false);
+              if(len>0&&len<n){vo=off;break}
+            }
           }
         }
-        if(!vo){const t=new TextDecoder('utf-8').decode(buf);const m=t.match(/MediaDataOffset="(\d+)"/i)||t.match(/MicroVideoOffset="(\d+)"/i);if(m&&parseInt(m[1])>0)vo=buf.byteLength-parseInt(m[1])}
-        if(!vo||vo<=0)return resolve(null);
-        const ib=new Blob([buf.slice(0,vo)],{type:'image/jpeg'}),vb=new Blob([buf.slice(vo)],{type:'video/mp4'});
+        if(!vo||vo<=0||vo>=n)return resolve(null);
+        const ib=new Blob([buf.slice(0,vo)],{type:'image/jpeg'});
+        const vb=new Blob([buf.slice(vo)],{type:'video/mp4'});
         resolve(vb.size>0?{imageBlob:ib,videoBlob:vb}:null);
       }catch(_){resolve(null)}
     };
