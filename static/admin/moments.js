@@ -166,37 +166,40 @@ async function momVideoUpload(files){
 async function momLiveUpload(files){
   if(!files||!files.length)return;
   const status=I('mom-status');
-  // 按 basename 分组
-  const groups = new Map(); // key=basename
+  // Step 1: 尝试 Android 单文件 Motion Photo 提取
+  const groups = new Map();
   for(const f of files){
+    status.textContent='分析: '+f.name;
+    // 先尝试客户端提取内嵌视频（Android Motion Photo）
+    const extracted = await extractMotionPhoto(f);
+    if(extracted){
+      status.textContent='提取实况图: '+f.name;
+      const base = f.name.replace(/\.[^.]+$/,'');
+      groups.set(base, {img: new File([extracted.imageBlob], base+'.jpg', {type:'image/jpeg'}), vid: extracted.videoBlob?new File([extracted.videoBlob], base+'.mp4', {type:'video/mp4'}):null, extracted:true});
+      continue;
+    }
+    // 没有内嵌视频 → 按扩展名手动配对
     const ext = f.name.split('.').pop().toLowerCase();
-    const base = f.name.replace(/\.[^.]+$/, '');
+    const base = f.name.replace(/\.[^.]+$/,'');
     const isVideo = /^(mp4|mov|webm|m4v)$/i.test(ext);
     const isImage = /^(jpe?g|png|webp|heic|heif)$/i.test(ext);
     if(!isVideo && !isImage){status.textContent='跳过不支持的文件: '+f.name;continue}
-    if(!groups.has(base))groups.set(base,{img:null,vid:null});
+    if(!groups.has(base))groups.set(base,{img:null,vid:null,extracted:false});
     const g = groups.get(base);
     if(isVideo)g.vid=f; else g.img=f;
   }
+  // Step 2: 上传每组
   for(const [base, g] of groups){
     try{
-      status.textContent='实况图: '+base;
+      status.textContent='实况图: '+base+(g.extracted?' [提取]':'');
       if(!g.img){status.textContent='缺图片: '+base;continue}
       let imgUrl, vidUrl;
-      // 上传图片
-      try{
-        const mode=getStorageMode();
-        if(mode==='r2'){
-          const r2r=await r2Upload(g.img);
-          imgUrl=r2r.url;
-          if(g.vid){
-            const r2v=await r2Upload(g.vid);
-            vidUrl=r2v.url;
-          }
-        }else{
-          throw new Error('github-mode');
-        }
-      }catch(_){
+      const mode=getStorageMode();
+      if(mode==='r2'){
+        const r2r=await r2Upload(g.img);
+        imgUrl=r2r.url;
+        if(g.vid){const r2v=await r2Upload(g.vid);vidUrl=r2v.url}
+      }else{
         // GitHub 模式
         const extI=g.img.name.split('.').pop().toLowerCase();
         const bnI='img-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)+'.'+extI;
@@ -215,15 +218,9 @@ async function momLiveUpload(files){
           vidUrl=LOCAL?'/api/raw/'+pathV:CDN+'/'+pathV;
         }
       }
-      momImgs.push({
-        name:base,
-        kind:'livephoto',
-        imgName: g.img.name,
-        vidName: g.vid ? g.vid.name : null,
-        imgUrl, vidUrl
-      });
+      momImgs.push({name:base,kind:'livephoto',imgName:g.img.name,vidName:g.vid?g.vid.name:null,imgUrl,vidUrl});
       renderMomImgs();
-      status.textContent='实况图已上传: '+(g.vid?base+'(图+视频)':base+'(仅图)');
+      status.textContent='实况图已上传: '+(g.vid?base+'(图+视频)':base+'(仅图)')+(g.extracted?' [自动提取]':'');
       onText();
     }catch(e){status.textContent='实况图失败: '+e.message}
   }

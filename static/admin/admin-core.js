@@ -65,6 +65,32 @@ async function r2Upload(file,prefix=''){
   return {name:bn,url:'/api/r2/img?key='+encodeURIComponent(bn)};
 }
 
+// ======== Android Motion Photo 提取（客户端从 JPEG 分离 MP4） ========
+// 参考 MotionFlow (github.com/DejavuMoe/MotionFlow)
+async function extractMotionPhoto(file){
+  return new Promise((resolve)=>{
+    const rd=new FileReader();
+    rd.onload=(e)=>{
+      try{
+        const buf=e.target.result,bytes=new Uint8Array(buf);
+        let vo=null;
+        for(let i=bytes.length-8;i>0;i--){
+          if(bytes[i]===0x66&&bytes[i+1]===0x74&&bytes[i+2]===0x79&&bytes[i+3]===0x70){
+            const off=i-4,v=new DataView(buf,off,4),len=v.getUint32(0,false);
+            if(len>0&&len<buf.byteLength){vo=off;break}
+          }
+        }
+        if(!vo){const t=new TextDecoder('utf-8').decode(buf);const m=t.match(/MediaDataOffset="(\d+)"/i)||t.match(/MicroVideoOffset="(\d+)"/i);if(m&&parseInt(m[1])>0)vo=buf.byteLength-parseInt(m[1])}
+        if(!vo||vo<=0)return resolve(null);
+        const ib=new Blob([buf.slice(0,vo)],{type:'image/jpeg'}),vb=new Blob([buf.slice(vo)],{type:'video/mp4'});
+        resolve(vb.size>0?{imageBlob:ib,videoBlob:vb}:null);
+      }catch(_){resolve(null)}
+    };
+    rd.onerror=()=>resolve(null);
+    rd.readAsArrayBuffer(file);
+  });
+}
+
 // ======== Image compression ========
 function compImg(file,mw,q,webp){return new Promise((ok,no)=>{const img=new Image();img.onload=()=>{const w=Math.min(img.width,mw),h=img.height*w/img.width;const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);c.toBlob(b=>{const m=webp?'image/webp':file.type;const ext=m==='image/webp'?'.webp':m==='image/png'?'.png':'.jpg';ok({blob:b,ext})},webp?'image/webp':file.type,q/100)};img.onerror=no;img.src=URL.createObjectURL(file)})}
 
