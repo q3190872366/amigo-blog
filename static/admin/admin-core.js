@@ -8,7 +8,7 @@ const T=(m,t)=>{const e=I('toast');if(!e)return;e.textContent=m;e.className=t;cl
 let P='',O='',R='',B='master',PP='content/posts';
 const LOCAL=(location.port==='8787')||new URLSearchParams(location.search).get('local')==='1';
 const CDN='https://cdn.jsdelivr.net/gh/q3190872366/amigo-blog@master';
-const R2_PUBLIC='https://pub-947aeedfef24715a5e45d50a7027f1d.r2.dev'; // Cloudflare R2 Public Dev URL
+const R2_PUBLIC='https://amigo-blog.pages.dev/r2'; // 通过 Cloudflare Pages 永久代理
 
 // ======== Auth ========
 function loadAuth(){
