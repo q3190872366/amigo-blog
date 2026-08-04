@@ -141,7 +141,7 @@ const server = http.createServer(async (r,res)=>{
     }
     // R2 API
     if(p==='/api/r2/upload'&&r.method==='POST'){
-      try{const{key,content,contentType}=JSON.parse(bodyStr||'{}');if(!key||!content)return sendJson(res,400,{message:'Missing key or content'});const buf=Buffer.from(content,'base64');const r2r=await uploadBuffer(BUCKET,key,buf,contentType||'image/webp');const presigned=presignedUrl(BUCKET,key,86400*7);return sendJson(res,200,{...r2r,presignedUrl:presigned})}catch(e){return sendJson(res,500,{message:e.message})}
+      try{const{key,content,contentType}=JSON.parse(bodyStr||'{}');if(!key||!content)return sendJson(res,400,{message:'Missing key or content'});const buf=Buffer.from(content,'base64');await uploadBuffer(BUCKET,key,buf,contentType||'image/webp');return sendJson(res,200,{key,url:`https://pub-947aeedfef24715a5e45d50a7027f1d.r2.dev/${key}`,publicUrl:`https://pub-947aeedfef24715a5e45d50a7027f1d.r2.dev/${key}`})}catch(e){return sendJson(res,500,{message:e.message})}
     }
     if(p==='/api/r2/list'){
       try{const items=await listObjects(BUCKET,u.searchParams.get('prefix')||'');return sendJson(res,200,items)}catch(e){return sendJson(res,500,{message:e.message})}
