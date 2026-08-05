@@ -155,13 +155,28 @@ function renderTags(){
   const input=I('mom-tag-input');
   if(!list)return;
   
-  // 显示已选标签
-  list.innerHTML=momTags.map(t=>
-    '<span class="mom-tag-item" onclick="removeTag(\''+esc(t)+'\')">'+
+  // 显示已选标签 - 使用 data-tag 属性避免引号转义问题
+  list.innerHTML=momTags.map((t,i)=>
+    '<span class="mom-tag-item" data-index="'+i+'">'+
       esc(t)+
-      '<span class="remove">×</span>'+
+      '<span class="remove" data-index="'+i+'">×</span>'+
     '</span>'
   ).join('');
+  
+  // 使用事件委托处理点击
+  list.onclick=function(e){
+    const removeBtn=e.target.closest('.remove');
+    const tagItem=e.target.closest('.mom-tag-item');
+    if(removeBtn){
+      // 点击删除按钮
+      const idx=parseInt(removeBtn.dataset.index);
+      if(!isNaN(idx))removeTagByIndex(idx);
+    }else if(tagItem){
+      // 点击标签本身
+      const idx=parseInt(tagItem.dataset.index);
+      if(!isNaN(idx))removeTagByIndex(idx);
+    }
+  };
   
   // 更新建议标签
   if(input){
@@ -173,11 +188,29 @@ function renderTags(){
       const div=document.createElement('div');
       div.className='mom-suggestions';
       div.innerHTML='<span style="font-size:12px;color:var(--m);margin-right:4px">常用标签:</span>'+
-        newSuggestions.slice(0,10).map(t=>
-          '<span class="mom-suggestion" onclick="addTag(\''+esc(t)+'\')">'+esc(t)+'</span>'
+        newSuggestions.slice(0,10).map((t,i)=>
+          '<span class="mom-suggestion" data-tag-idx="'+i+'">'+esc(t)+'</span>'
         ).join('');
+      // 建议标签点击事件委托
+      div.onclick=function(e){
+        const el=e.target.closest('.mom-suggestion');
+        if(el){
+          const idx=parseInt(el.dataset.tagIdx);
+          const tag=newSuggestions[idx];
+          if(tag)addTag(tag);
+        }
+      };
       wrap.appendChild(div);
     }
+  }
+}
+
+// 通过索引移除标签
+function removeTagByIndex(idx){
+  if(idx>=0&&idx<momTags.length){
+    momTags.splice(idx,1);
+    renderTags();
+    onText();
   }
 }
 
@@ -191,13 +224,6 @@ function addTag(tag){
   momTags.push(tag);
   const input=I('mom-tag-input');
   if(input)input.value='';
-  renderTags();
-  onText();
-}
-
-// 移除标签
-function removeTag(tag){
-  momTags=momTags.filter(t=>t!==tag);
   renderTags();
   onText();
 }
