@@ -3,6 +3,19 @@ let momImgs=[];       // [{name,url,path,kind:'new'|'lib'}]
 let momSlug='';       // 当前动态的目录名（图片上传用）
 let momLibImgs=[];    // 媒体库缓存
 let momTopic='';      // 选中话题
+let momLocation='';   // 选中的位置
+let _momTopTimer=null;
+let momActiveTab='normal'; // 当前选中的图片 Tab
+
+// 顶部状态条（上传进度显示）
+function momTopBar(msg){
+  const el=I('mom-topbar');
+  if(!el)return;
+  if(!msg){el.innerHTML='';return}
+  el.innerHTML='<div>'+esc(msg)+'</div>';
+  if(_momTopTimer)clearTimeout(_momTopTimer);
+  _momTopTimer=setTimeout(()=>{el.innerHTML=''},3000);
+}
 
 // 鉴权检查（未登录跳回首页）
 if(!requireAuth()){
@@ -74,6 +87,7 @@ function doFmt(t){
 
 // 图片标签切换
 function swMomImgTab(t){
+  momActiveTab=t;
   document.querySelectorAll('.mom-img-tab').forEach(x=>x.classList.toggle('on',x.dataset.tab===t));
   const addBtn=I('mom-img-add');
   const hint=I('mom-img-hint');
@@ -87,6 +101,11 @@ function swMomImgTab(t){
     hint.textContent='支持多选（可同时选 JPG + MOV 自动配对；Android 可选动态照片单文件）';
     I('mom-img-file').value='';
     I('mom-video-file').value='';
+  }else if(t==='real'){
+    addBtn.onclick=()=>I('mom-img-file').click();
+    hint.textContent='上传原图（不压缩，保留真实画质）';
+    I('mom-video-file').value='';
+    I('mom-live-file').value='';
   }else{
     addBtn.onclick=()=>I('mom-img-file').click();
     hint.textContent='点击添加图片';
@@ -112,10 +131,18 @@ async function momImgUpload(files){
     return;
   }
   const status={set textContent(v){momTopBar(v)}};
+  const noCompress=(momActiveTab==='real');
   for(const file of files){
     try{
-      status.textContent='上传中: '+file.name;
-      const{blob,ext}=await compImg(file,1600,0.82,true);
+      status.textContent=(noCompress?'上传原图: ':'上传中: ')+file.name;
+      let blob,ext;
+      if(noCompress){
+        blob=file;
+        const origExt=file.name.split('.').pop().toLowerCase();
+        ext=(/^(jpe?g|png|gif|webp)$/i.test(origExt)?'.'+origExt:'.jpg');
+      }else{
+        ({blob,ext}=await compImg(file,1600,0.82,true));
+      }
       const bn='img-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)+ext;
       const r=new FileReader();
       const content=await new Promise((ok,no)=>{r.onload=()=>ok(r.result.split(',')[1]);r.onerror=no;r.readAsDataURL(blob)});
@@ -238,6 +265,7 @@ function renderMomImgs(){
   const hint=I('mom-img-hint');
   if(activeTab==='video')hint.textContent='点击添加视频';
   else if(activeTab==='live')hint.textContent='支持多选（可同时选 JPG + MOV 自动配对）';
+  else if(activeTab==='real')hint.textContent='上传原图（不压缩，保留真实画质）';
   else hint.textContent='点击添加图片';
   // 同步 add 按钮 onclick
   const addBtn=I('mom-img-add');
@@ -313,6 +341,36 @@ function pickLibImg(name){
   onText();
 }
 
+// ======== 位置功能 ========
+function pickLocation(){
+  I('mom-loc-picker').classList.add('on');
+  if(momLocation)I('mom-loc-input').value=momLocation;
+}
+function closeLocPicker(){
+  I('mom-loc-picker').classList.remove('on');
+}
+function pickByGPS(){
+  if(!navigator.geolocation){T('浏览器不支持定位','err');return}
+  T('正在获取位置...','info');
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      const{latitude,longitude}=pos.coords;
+      I('mom-loc-input').value=`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+      T('已获取坐标','ok');
+    },
+    err=>{T('定位失败: '+err.message,'err')},
+    {enableHighAccuracy:true,timeout:10000}
+  );
+}
+function saveLocation(){
+  const v=(I('mom-loc-input').value||'').trim();
+  if(!v){closeLocPicker();return}
+  momLocation=v;
+  I('mom-loc-text').textContent=v;
+  closeLocPicker();
+  T('位置已保存','ok');
+}
+
 // 发表
 async function publishMoment(){
   const text=I('mom-text').value.trim();
@@ -367,6 +425,7 @@ async function publishMoment(){
       'type: moment'
     ];
     if(topic)fm.push('tags: ["'+topic.replace(/"/g,'\\"')+'"]');
+    if(momLocation)fm.push('location: "'+momLocation.replace(/"/g,'\\"')+'"');
 
     const content=b64e('---\n'+fm.join('\n')+'\n---\n\n'+body);
     await gh('/contents/'+ghp(path),{method:'PUT',body:JSON.stringify({message:'admin: publish moment '+slug,content,branch:B})});
