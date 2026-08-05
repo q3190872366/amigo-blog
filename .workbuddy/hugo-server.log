@@ -1,0 +1,22 @@
+Watching for changes in e:\S3\boke\{content,data,package.json,static,themes}
+Watching for config changes in e:\S3\boke\hugo.toml, e:\S3\boke\themes\Amigo\hugo.toml
+Start building sites … 
+hugo v0.128.2-de36c1a95d28595d8243fd8b891665b069ed0850+extended windows/amd64 BuildDate=2024-07-04T08:13:25Z VendorInfo=gohugoio
+
+
+                   | EN  
+-------------------+-----
+  Pages            | 33  
+  Paginator pages  |  0  
+  Non-page files   |  7  
+  Static files     | 37  
+  Processed images |  0  
+  Aliases          |  0  
+  Cleaned          |  0  
+
+Built in 123 ms
+Environment: "development"
+Serving pages from disk
+Running in Fast Render Mode. For full rebuilds on change: hugo server --disableFastRender
+Web Server is available at http://localhost:1313/ (bind address 0.0.0.0) 
+Press Ctrl+C to stop
