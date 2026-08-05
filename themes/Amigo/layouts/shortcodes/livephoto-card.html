@@ -8,7 +8,7 @@
     <div class="live-card-container">
         {{/* 静态图片 */}}
         {{ if $src }}
-        <img class="live-card-img" src="{{ $src }}" alt="{{ $caption }}" loading="lazy">
+        <img class="live-card-img" src="{{ $src }}" alt="{{ $caption }}" loading="lazy" data-keep="1">
         {{ end }}
 
         {{/* 视频 */}}

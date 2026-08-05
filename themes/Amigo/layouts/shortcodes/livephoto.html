@@ -18,7 +18,7 @@
 {{- $style := .Get "style" -}}
 
 <div class="live-photo"{{ with $style }}{{ printf " style=%q" (. | safeCSS) | safeHTMLAttr }}{{ end }} onclick="openLivePhotoLightbox(event)">
-  <img class="live-photo-poster" src="{{ $image }}" alt="{{ $alt }}" loading="lazy">
+  <img class="live-photo-poster" src="{{ $image }}" alt="{{ $alt }}" loading="lazy" data-keep="1">
   <video class="live-photo-video" data-src="{{ $video }}" poster="{{ $image }}" muted playsinline loop preload="metadata" aria-label="{{ $alt }}"></video>
   <div class="live-photo-controls-group">
     <button type="button" class="live-photo-control-btn live-photo-toggle-btn" data-state="static" aria-label="Toggle Live Photo" onclick="event.stopPropagation()">
