@@ -98,7 +98,12 @@
         <select id="p-type-filter" onchange="renderPosts()"><option value="all">类型</option><option value="post">文章</option><option value="moment">动态</option></select>
         <a class="btn btn-s btn-sm" href="moments.html">✏️ 新建动态</a>
         <button class="btn btn-p btn-sm" onclick="newPost()">+ 新建文章</button>
-      </div><div class="plist" id="p-list"><div class="empty">加载中...</div></div></div>
+        <button class="btn btn-sm" onclick="enterBatchMode()" id="p-batch-btn">☑️ 批量</button>
+        <button class="btn btn-sm" onclick="showRecycleBin()" id="p-recycle-btn">🗑 回收站</button>
+      </div>
+      <!-- 批量操作栏 -->
+      <div class="p-batch-bar" id="p-batch-bar" style="display:none"></div>
+      <div class="plist" id="p-list"><div class="empty">加载中...</div></div></div>
 
       <!-- Editor -->
       <div id="ed">
@@ -332,9 +337,29 @@
   </div>
 </div>
 
+<!-- 回收站模态框 -->
+<div id="recycle-modal" class="modal" style="display:none">
+  <div class="modal-bg" onclick="closeRecycleBin()"></div>
+  <div class="modal-bd">
+    <div class="modal-h">
+      <h3>🗑 回收站</h3>
+      <div>
+        <button class="btn btn-sm btn-danger" onclick="emptyRecycleBin()">清空</button>
+        <button class="btn btn-sm" onclick="closeRecycleBin()">✕</button>
+      </div>
+    </div>
+    <div class="modal-c">
+      <div id="recycle-list" class="plist"></div>
+      <div class="recycle-info">
+        <div>回收站中的内容保留 30 天，到期自动清除</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
-<script src="admin-core.js?v=20260805"></script>
-<script src="admin.js?v=20260805"></script>
+<script src="admin-core.js?v=20260805-2"></script>
+<script src="admin.js?v=20260805-2"></script>
 </body>
 </html>

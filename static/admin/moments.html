@@ -36,14 +36,16 @@
     <button onclick="doFmt('emoji')" title="表情">😊</button>
   </div>
 
-  <!-- 正文 -->
+  <!-- 标题和正文 -->
   <div class="mom-body">
+    <input type="text" id="mom-title" placeholder="添加标题（可选）" class="mom-title-input" oninput="onText()" maxlength="100">
     <textarea id="mom-text" placeholder="这一刻的想法..." oninput="onText()" maxlength="2000"></textarea>
     <div class="mom-meta">
       <span class="mom-cnt" id="mom-cnt">0 / 2000</span>
-      <select id="mom-topic" class="mom-topic">
-        <option value="">选择话题（可选）</option>
-      </select>
+      <div class="mom-tags-wrap" id="mom-tags-wrap">
+        <div class="mom-tags-list" id="mom-tags-list"></div>
+        <input type="text" id="mom-tag-input" placeholder="输入标签后回车添加" class="mom-tag-input" onkeydown="onTagInput(event)">
+      </div>
     </div>
   </div>
 

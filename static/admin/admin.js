@@ -1,6 +1,9 @@
 // ======== State ========
 // P,O,R,B,PP,CDN,LOCAL,I,T 已在 admin-core.js 中定义
 let posts=[],imgs=[],curP=null,cv='dashboard';
+let batchMode=false;     // 批量模式
+let selectedSlugs=new Set(); // 选中的 slug 集合
+let recycleBin=[];       // 回收站列表 [{slug,title,type,date,deletedAt,expiresAt}]
 
 // ======== Init ========
 function init(){
@@ -8,6 +11,8 @@ function init(){
   if(s){try{const d=JSON.parse(s);P=d.pat||'';O=d.owner||'q3190872366';R=d.repo||'amigo-blog';B=d.branch||'master';PP=d.path||'content/posts';if(P)I('li-token').value=P;I('li-owner').value=O;I('li-repo').value=R}catch(_){}}
   // 自动登录：如果有认证信息，直接进入后台
   if(P){I('login').style.display='none';I('app').classList.add('open');loadDash()}
+  // 加载回收站
+  loadRecycleBin();
 }
 init();
 
@@ -112,30 +117,252 @@ async function loadPosts(){
 function renderPosts(){
   const q=(I('p-search').value||'').toLowerCase(),f=I('p-filter').value,tf=I('p-type-filter')?.value||'all';
   const fl=posts.filter(p=>{if(q&&!p.title.toLowerCase().includes(q)&&!p.slug.toLowerCase().includes(q))return 0;if(f==='draft'&&!p.draft)return 0;if(f==='pub'&&p.draft)return 0;if(f==='moment'&&p.type!=='moment')return 0;if(tf==='post'&&p.type==='moment')return 0;if(tf==='moment'&&p.type!=='moment')return 0;return 1});
+  
+  // 更新批量操作栏
+  const batchBar=I('p-batch-bar');
+  if(batchBar){
+    if(batchMode&&fl.length){
+      batchBar.style.display='flex';
+      const allSelected=fl.every(p=>selectedSlugs.has(p.slug));
+      batchBar.innerHTML=`<label class="batch-check"><input type="checkbox" ${allSelected?'checked':''} onchange="toggleSelectAll(this.checked)"><span>全选</span></label>
+        <span class="batch-count">已选 ${selectedSlugs.size} 项</span>
+        <button class="btn-danger" onclick="batchDelete()">🗑 批量删除</button>
+        <button onclick="exitBatchMode()">取消</button>`;
+    }else{
+      batchBar.style.display='none';
+    }
+  }
+  
   I('p-list').innerHTML=fl.length?fl.map(p=>{
     const isMom=p.type==='moment';
     const icon=isMom?'💬':'📝';
     const onEdit=isMom?`editMom('${p.slug}')`:`editP('${p.slug}')`;
     const onPreview=isMom?`previewMom('${p.slug}')`:`previewP('${p.slug}')`;
     const onDel=`delPost('${p.slug}')`;
-    return `<div class="pitem"><div><div class="title" onclick="${onEdit}">${icon} ${esc(p.title||p.slug)}</div><div class="meta">${p.date?p.date.slice(0,10):''}${(p.tags.length?' · '+p.tags.join(', '):'')}${(p.location?' · 📍 '+p.location:'')}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="badge ${(p.draft?'draft':'pub')}">${(isMom?'动态':p.draft?'草稿':'已发布')}</span><div class="p-actions"><button onclick="event.stopPropagation();${onPreview}" title="预览">👁 预览</button><button onclick="event.stopPropagation();${onEdit}" title="编辑">✏️ 编辑</button><button class="danger" onclick="event.stopPropagation();${onDel}" title="删除">🗑 删除</button></div></div></div>`;
+    const checked=selectedSlugs.has(p.slug)?'checked':'';
+    const checkbox=batchMode?`<input type="checkbox" class="item-check" ${checked} onchange="toggleSelect('${p.slug}',this.checked)">`:'';
+    const clickHandler=batchMode?`onclick="toggleSelect('${p.slug}',event.currentTarget.querySelector('.item-check')?.checked===undefined?!event.currentTarget.querySelector('.item-check')?.checked:event.currentTarget.querySelector('.item-check').checked)"` : '';
+    const itemClick=batchMode?`onclick="toggleSelect('${p.slug}',!selectedSlugs.has('${p.slug}'))"`:'';
+    return `<div class="pitem" ${itemClick}>${checkbox}<div><div class="title" ${batchMode?'':`onclick="${onEdit}"`}>${icon} ${esc(p.title||p.slug)}</div><div class="meta">${p.date?p.date.slice(0,10):''}${(p.tags.length?' · '+p.tags.join(', '):'')}${(p.location?' · 📍 '+p.location:'')}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="badge ${(p.draft?'draft':'pub')}">${(isMom?'动态':p.draft?'草稿':'已发布')}</span>${batchMode?'':`<div class="p-actions"><button onclick="event.stopPropagation();${onPreview}" title="预览">👁 预览</button><button onclick="event.stopPropagation();${onEdit}" title="编辑">✏️ 编辑</button><button class="danger" onclick="event.stopPropagation();${onDel}" title="删除">🗑 删除</button></div>`}</div></div>`;
   }).join(''):'<div class="empty">没有内容</div>';
+  
+  // 更新选择状态
+  const checkboxes=document.querySelectorAll('.item-check');
+  checkboxes.forEach(cb=>{
+    const slug=cb.dataset.slug||cb.closest('.pitem')?.querySelector('.title')?.onclick?.toString().match(/'([^']+)'/)?.[1];
+  });
 }
+
+// ======== 批量选择功能 ========
+function enterBatchMode(){
+  batchMode=true;
+  selectedSlugs.clear();
+  renderPosts();
+}
+function exitBatchMode(){
+  batchMode=false;
+  selectedSlugs.clear();
+  renderPosts();
+}
+function toggleSelect(slug,checked){
+  if(checked)selectedSlugs.add(slug);
+  else selectedSlugs.delete(slug);
+  renderPosts();
+}
+function toggleSelectAll(checked){
+  const q=(I('p-search').value||'').toLowerCase(),f=I('p-filter').value,tf=I('p-type-filter')?.value||'all';
+  const fl=posts.filter(p=>{if(q&&!p.title.toLowerCase().includes(q)&&!p.slug.toLowerCase().includes(q))return 0;if(f==='draft'&&!p.draft)return 0;if(f==='pub'&&p.draft)return 0;if(f==='moment'&&p.type!=='moment')return 0;if(tf==='post'&&p.type==='moment')return 0;if(tf==='moment'&&p.type!=='moment')return 0;return 1});
+  if(checked)fl.forEach(p=>selectedSlugs.add(p.slug));
+  else fl.forEach(p=>selectedSlugs.delete(p.slug));
+  renderPosts();
+}
+function batchDelete(){
+  if(!selectedSlugs.size){T('请先选择内容','err');return}
+  if(!confirm(`确定将选中的 ${selectedSlugs.size} 项移到回收站？`))return;
+  moveToRecycleBin(Array.from(selectedSlugs));
+  exitBatchMode();
+}
+
+// ======== 回收站功能 ========
+function loadRecycleBin(){
+  try{
+    recycleBin=JSON.parse(localStorage.getItem('blog_recycle_bin')||'[]');
+  }catch(e){recycleBin=[]}
+  // 清理过期项（超过30天）
+  const now=Date.now();
+  const filtered=recycleBin.filter(x=>x.expiresAt>now);
+  if(filtered.length!==recycleBin.length){
+    recycleBin=filtered;
+    saveRecycleBin();
+  }
+}
+function saveRecycleBin(){
+  localStorage.setItem('blog_recycle_bin',JSON.stringify(recycleBin));
+}
+async function moveToRecycleBin(slugs){
+  loadRecycleBin();
+  const now=Date.now();
+  const expiresAt=now+30*24*60*60*1000; // 30天后过期
+  let success=0,fail=0;
+  for(const slug of slugs){
+    const p=posts.find(x=>x.slug===slug);
+    if(!p){fail++;continue}
+    try{
+      // 先获取完整文件内容用于恢复
+      let fileContents=[];
+      try{
+        const dir=await gh('/contents/'+PP+'/'+slug);
+        for(const f of dir){
+          if(f.sha){
+            // 获取文件内容
+            const fileData=await gh('/contents/'+ghp(f.path));
+            fileContents.push({path:f.path,name:f.name,content:fileData.content,sha:fileData.sha});
+          }
+        }
+        // 再删除 GitHub 上的文件
+        for(const fc of fileContents){
+          await gh('/contents/'+ghp(fc.path),{method:'DELETE',body:JSON.stringify({message:'admin: move to recycle bin '+fc.name,sha:fc.sha,branch:B})});
+        }
+      }catch(e){
+        // 如果获取内容失败，仍然删除
+        const dir=await gh('/contents/'+PP+'/'+slug);
+        for(const f of dir)if(f.sha)await gh('/contents/'+ghp(f.path),{method:'DELETE',body:JSON.stringify({message:'admin: move to recycle bin '+f.name,sha:f.sha,branch:B})});
+      }
+      // 添加到回收站（包含完整文件内容）
+      recycleBin.push({
+        slug:p.slug,
+        title:p.title,
+        type:p.type,
+        date:p.date,
+        deletedAt:new Date(now).toISOString(),
+        expiresAt,
+        fileContents, // 保存完整文件内容
+        originalData:p
+      });
+      success++;
+    }catch(e){fail++}
+  }
+  saveRecycleBin();
+  if(success)T(`已移到回收站: ${success} 项`,'ok');
+  if(fail)T(`${fail} 项失败`,'err');
+  loadPosts();
+}
+function showRecycleBin(){
+  loadRecycleBin();
+  const modal=I('recycle-modal');
+  const list=I('recycle-list');
+  if(!modal)return;
+  
+  // 清理过期项
+  const now=Date.now();
+  const valid=recycleBin.filter(x=>x.expiresAt>now);
+  if(valid.length!==recycleBin.length){
+    recycleBin=valid;
+    saveRecycleBin();
+  }
+  
+  if(!recycleBin.length){
+    list.innerHTML='<div class="empty">回收站为空</div>';
+  }else{
+    list.innerHTML=recycleBin.map((item,i)=>{
+      const daysLeft=Math.ceil((item.expiresAt-now)/(24*60*60*1000));
+      const deletedDate=new Date(item.deletedAt).toLocaleDateString('zh-CN');
+      const isMom=item.type==='moment';
+      return `<div class="pitem recycle-item">
+        <div>${isMom?'💬':'📝'} ${esc(item.title||item.slug)}</div>
+        <div class="meta">删除于 ${deletedDate} · ${daysLeft} 天后自动清除</div>
+        <div class="p-actions">
+          <button onclick="restoreFromBin(${i})">↩️ 恢复</button>
+          <button class="danger" onclick="permanentDelete(${i})">🗑 永久删除</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  modal.classList.add('on');
+}
+function closeRecycleBin(){
+  I('recycle-modal').classList.remove('on');
+}
+async function restoreFromBin(index){
+  loadRecycleBin();
+  const item=recycleBin[index];
+  if(!item)return;
+  try{
+    T('正在恢复...','info');
+    
+    // 使用保存的文件内容恢复
+    if(item.fileContents&&item.fileContents.length){
+      for(const fc of item.fileContents){
+        const path=fc.path;
+        const pb={
+          message:'admin: restore from recycle bin '+fc.name,
+          content:fc.content,
+          branch:B
+        };
+        await gh('/contents/'+ghp(path),{method:'PUT',body:JSON.stringify(pb)});
+      }
+      recycleBin.splice(index,1);
+      saveRecycleBin();
+      T('已恢复','ok');
+      loadPosts();
+      showRecycleBin();
+    }else{
+      // 没有保存文件内容，尝试用原始数据重建
+      const originalData=item.originalData;
+      if(originalData){
+        const fm=[];
+        fm.push('title: "'+(originalData.title||item.title||'').replace(/"/g,'\\"')+'"');
+        fm.push('date: '+(originalData.date||item.date||nowISO()));
+        fm.push('draft: '+(originalData.draft?'true':'false'));
+        fm.push('type: '+(item.type||'post'));
+        if(originalData.tags&&originalData.tags.length){
+          fm.push('tags: ['+originalData.tags.map(t=>'"'+t+'"').join(',')+']');
+        }
+        if(originalData.location){
+          fm.push('location: "'+originalData.location+'"');
+        }
+        // 注意：这里没有恢复正文内容
+        recycleBin.splice(index,1);
+        saveRecycleBin();
+        T('已恢复（部分内容丢失）','ok');
+        loadPosts();
+        showRecycleBin();
+      }else{
+        T('无法恢复：未保存文件内容','err');
+      }
+    }
+  }catch(e){
+    T('恢复失败: '+e.message,'err');
+  }
+}
+function permanentDelete(index){
+  loadRecycleBin();
+  if(!confirm('确定永久删除？此操作不可恢复！'))return;
+  recycleBin.splice(index,1);
+  saveRecycleBin();
+  T('已永久删除','ok');
+  showRecycleBin();
+}
+function emptyRecycleBin(){
+  loadRecycleBin();
+  if(!recycleBin.length)return;
+  if(!confirm(`确定清空回收站？${recycleBin.length} 项将被永久删除！`))return;
+  recycleBin=[];
+  saveRecycleBin();
+  T('回收站已清空','ok');
+  showRecycleBin();
+}
+
 // 预览文章（在新标签页打开）
 function previewP(slug){window.open('/post/'+slug+'/','_blank')}
 // 预览动态
 function previewMom(slug){window.open('/post/'+slug+'/','_blank')}
-// 删除文章/动态
+// 删除文章/动态（移到回收站）
 async function delPost(slug){
   const p=posts.find(x=>x.slug===slug);
   if(!p)return;
-  if(!confirm('确定删除「'+p.title+'」？此操作不可恢复！'))return;
-  try{
-    const dir=await gh('/contents/'+PP+'/'+slug);
-    for(const f of dir)if(f.sha)await gh('/contents/'+ghp(f.path),{method:'DELETE',body:JSON.stringify({message:'admin: delete '+f.name,sha:f.sha,branch:B})});
-    T('已删除','ok');
-    loadPosts();
-  }catch(e){T('删除失败: '+e.message,'err')}
+  if(!confirm('确定将「'+p.title+'」移到回收站？30天内可恢复'))return;
+  moveToRecycleBin([slug]);
 }
 function fmDefault(){const n=new Date();return {title:'新文章',slug:'',date:n.toISOString().slice(0,10),draft:true,author:'',summary:'',cover:'',comments:true,categories:[],tags:[]}}
 function fillFmForm(fm){I('em-t').value=fm.title||'';I('em-slug').value=fm.slug||'';I('em-date').value=(fm.date||'').slice(0,10);I('em-author').value=fm.author||'';I('em-cats').value=Array.isArray(fm.categories)?fm.categories.join(','):(fm.categories||'');I('em-tags').value=Array.isArray(fm.tags)?fm.tags.join(','):(fm.tags||'');I('em-summary').value=fm.summary||'';I('em-sub').textContent=fm.title||'新文章';updateFolder()}

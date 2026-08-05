@@ -3,7 +3,9 @@ let momImgs=[];       // [{name,url,path,kind:'new'|'lib'}]
 let momSlug='';       // 当前动态的目录名（图片上传用）
 let momLibImgs=[];    // 媒体库缓存
 let momLibFiltered=[]; // 媒体库过滤后的列表
-let momTopic='';      // 选中话题
+let momTags=[];       // 选中的标签数组
+let momAllTags=[];    // 所有可用标签
+let momTitle='';      // 动态标题
 let momLocation='';   // 选中的位置
 let _momTopTimer=null;
 let momActiveTab='normal'; // 当前选中的图片 Tab
@@ -31,7 +33,7 @@ if(!requireAuth()){
     loadMomentForEdit(editingSlug);
   }else{
     momSlug=nowSlug();
-    loadTopics();
+    loadTags();
   }
 }
 
@@ -50,9 +52,16 @@ async function loadMomentForEdit(slug){
     I('mom-text').value=body.trim();
     onText();
     
-    // 填充话题
-    if(fm.tags&&fm.tags.length){
-      momTopic=Array.isArray(fm.tags)?fm.tags[0]:fm.tags;
+    // 填充标题
+    if(fm.title){
+      I('mom-title').value=fm.title;
+      momTitle=fm.title;
+    }
+    
+    // 填充标签
+    if(fm.tags){
+      momTags=Array.isArray(fm.tags)?fm.tags:[fm.tags];
+      renderTags();
     }
     
     // 填充位置
@@ -119,27 +128,89 @@ function cancelMoment(){
   location.href='index.html';
 }
 
-// 加载话题（从已有动态的 tags/categories 收集）
-async function loadTopics(){
+// 加载所有标签（从已有动态的 tags/categories 收集）
+async function loadTags(){
   try{
     const data=await gh('/contents/'+PP);
-    const topics=new Set();
+    const tags=new Set();
     for(const it of data){
       if(it.type!=='dir')continue;
       try{
         const f=await gh('/contents/'+ghp(PP+'/'+it.name+'/index.md'));
         const fm=parseFM(b64d(f.content));
         if(fm.type==='moment'||!fm.type){
-          if(Array.isArray(fm.tags))fm.tags.forEach(t=>topics.add(t));
-          if(Array.isArray(fm.categories))fm.categories.forEach(c=>topics.add(c));
+          if(Array.isArray(fm.tags))fm.tags.forEach(t=>tags.add(t));
+          if(Array.isArray(fm.categories))fm.categories.forEach(c=>tags.add(c));
         }
       }catch(_){}
     }
-    const sel=I('mom-topic');
-    sel.innerHTML='<option value="">选择话题（可选）</option>'+
-      Array.from(topics).slice(0,30).map(t=>'<option value="'+esc(t)+'">'+esc(t)+'</option>').join('');
-    sel.onchange=()=>{momTopic=sel.value};
+    momAllTags=Array.from(tags).slice(0,50);
+    renderTags();
   }catch(_){}
+}
+
+// 渲染标签
+function renderTags(){
+  const list=I('mom-tags-list');
+  const input=I('mom-tag-input');
+  if(!list)return;
+  
+  // 显示已选标签
+  list.innerHTML=momTags.map(t=>
+    '<span class="mom-tag-item" onclick="removeTag(\''+esc(t)+'\')">'+
+      esc(t)+
+      '<span class="remove">×</span>'+
+    '</span>'
+  ).join('');
+  
+  // 更新建议标签
+  if(input){
+    const existing=document.querySelector('.mom-suggestions');
+    const newSuggestions=momAllTags.filter(t=>!momTags.includes(t));
+    if(existing)existing.remove();
+    if(newSuggestions.length){
+      const wrap=I('mom-tags-wrap');
+      const div=document.createElement('div');
+      div.className='mom-suggestions';
+      div.innerHTML='<span style="font-size:12px;color:var(--m);margin-right:4px">常用标签:</span>'+
+        newSuggestions.slice(0,10).map(t=>
+          '<span class="mom-suggestion" onclick="addTag(\''+esc(t)+'\')">'+esc(t)+'</span>'
+        ).join('');
+      wrap.appendChild(div);
+    }
+  }
+}
+
+// 添加标签
+function addTag(tag){
+  if(!tag)return;
+  tag=tag.trim();
+  if(!tag)return;
+  if(momTags.includes(tag))return;
+  if(momTags.length>=10){T('最多添加10个标签','err');return}
+  momTags.push(tag);
+  const input=I('mom-tag-input');
+  if(input)input.value='';
+  renderTags();
+  onText();
+}
+
+// 移除标签
+function removeTag(tag){
+  momTags=momTags.filter(t=>t!==tag);
+  renderTags();
+  onText();
+}
+
+// 标签输入框回车添加
+function onTagInput(e){
+  if(e.key==='Enter'||e.key===','){
+    e.preventDefault();
+    const input=I('mom-tag-input');
+    if(input&&input.value.trim()){
+      addTag(input.value.trim());
+    }
+  }
 }
 
 // 简易 front matter 解析
@@ -626,14 +697,17 @@ async function publishMoment(){
     }
 
     // 构建 front matter
-    const topic=momTopic;
+    momTitle=(I('mom-title')?.value||'').trim();
+    const title=momTitle||'';
     const fm=[
-      'title: ""',
+      'title: "'+title.replace(/"/g,'\\"')+'"',
       'date: '+nowISO(),
       'draft: false',
       'type: moment'
     ];
-    if(topic)fm.push('tags: ["'+topic.replace(/"/g,'\\"')+'"]');
+    if(momTags.length){
+      fm.push('tags: ['+momTags.map(t=>'"'+t.replace(/"/g,'\\"')+'"').join(',')+']');
+    }
     if(momLocation)fm.push('location: "'+momLocation.replace(/"/g,'\\"')+'"');
 
     const content=b64e('---\n'+fm.join('\n')+'\n---\n\n'+body);

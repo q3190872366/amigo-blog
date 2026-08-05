@@ -332,3 +332,39 @@ input,textarea,select,button{font-family:inherit;font-size:13px;outline:none}
   .img-mgr-bar input{font-size:15px;padding:9px 12px}
   .img-mgr-bar .btn{padding:7px 12px;font-size:14px}
 }
+
+/* Batch operation bar */
+.p-batch-bar{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;margin-bottom:10px}
+.p-batch-bar .batch-check{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--t);cursor:pointer}
+.p-batch-bar .batch-check input{width:16px;height:16px}
+.p-batch-bar .batch-count{font-size:13px;color:var(--m)}
+.p-batch-bar button{padding:5px 12px;border-radius:6px;border:1px solid var(--e);background:var(--card);cursor:pointer;font-size:12px;color:var(--t)}
+.p-batch-bar .btn-danger{background:var(--r);color:#fff;border-color:var(--r)}
+.p-batch-bar .btn-danger:hover{background:#dc2626}
+
+/* Item checkbox */
+.item-check{width:16px;height:16px;margin-right:12px;cursor:pointer}
+
+/* Recycle bin modal */
+.modal{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center}
+.modal-bg{position:absolute;inset:0;background:rgba(0,0,0,.5)}
+.modal-bd{position:relative;background:var(--card);border-radius:12px;width:90vw;max-width:600px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.2)}
+.modal-h{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--e)}
+.modal-h h3{font-size:15px;font-weight:600}
+.modal-h button{padding:5px 10px;border:1px solid var(--e);border-radius:6px;background:var(--card);cursor:pointer;font-size:12px}
+.modal-h .btn-danger{background:var(--r);color:#fff;border-color:var(--r)}
+.modal-c{flex:1;overflow-y:auto;padding:14px}
+.recycle-info{padding:12px;text-align:center;font-size:12px;color:var(--m);background:#f9fafb;border-radius:8px;margin-top:12px}
+
+/* Recycle item */
+.recycle-item{flex-direction:column;align-items:flex-start!important}
+.recycle-item .p-actions{display:flex!important;margin-top:8px}
+.recycle-item .p-actions button{padding:4px 10px;font-size:11px}
+
+/* Mobile adjustments */
+@media(max-width:768px){
+  .p-batch-bar{flex-wrap:wrap;gap:8px;padding:10px}
+  .p-batch-bar .batch-count{font-size:12px}
+  .p-batch-bar button{padding:5px 10px;font-size:12px}
+  .modal-bd{width:95vw;max-height:85vh}
+}
