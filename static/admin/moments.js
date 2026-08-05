@@ -515,8 +515,9 @@ function filterMomLib(){
   
   grid.innerHTML=fl.map((x,i)=>{
     const srcBadge=x.source==='r2'?'<span class="lib-badge r2">R2</span>':'<span class="lib-badge gh">Git</span>';
+    const imgHtml='<img src="'+x.url+'" alt="'+esc(x.name)+'" loading="lazy">';
     return '<div class="lib-item" onclick="pickLibByIndex('+i+')">'+
-      '<img src="'+x.url+'" alt="'+esc(x.name)+'" loading="lazy" onerror="this.outerHTML=\'<div class=\\'lib-error\\'>加载失败</div>\'">'+
+      imgHtml+
       srcBadge+
       '<div class="nm">'+esc(x.name)+'</div>'+
     '</div>';
