@@ -44,6 +44,10 @@
     {{- end -}}
     
     {{- $scripts = $scripts | append (resources.Get "js/init.js") -}}
+    
+    {{- /* Live Photo 和 Gallery 组件 */ -}}
+    {{- $scripts = $scripts | append (resources.Get "js/live-photo.js") -}}
+    {{- $scripts = $scripts | append (resources.Get "js/single-gallery.js") -}}
 
     {{- $bundleJs := $scripts | resources.Concat "js/bundle.js" | minify | fingerprint -}}
     

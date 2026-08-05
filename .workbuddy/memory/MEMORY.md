@@ -1,5 +1,9 @@
 # amigo-blog 项目约定
 
+## 协作规则
+- 详见项目根目录 `agent.md`
+- 核心原则：大白话沟通 / 需求确认95%+ / 调研先行避免造轮子 / 定计划再动手 / 拿不准就停
+
 ## 仓库
 - GitHub: `q3190872366/amigo-blog`（Private），默认分支 `master`
 - 部署目标：Cloudflare Pages（amigo-blog.pages.dev），production branch 标签 `main`（仅 Pages 侧，与仓库分支无关）

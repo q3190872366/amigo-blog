@@ -24,7 +24,6 @@
 
                 {{/* 正文内容 */}}
                 <div class="article-text moment-text">
-                    {{/* 这里同样剔除掉正文里的图片标签，图片会统一在下面的画廊里展示 */}}
                     {{ $content := .Content }}
                     {{ $content = $content | replaceRE "<img([^>]*data-keep=\"1\"[^>]*)>" "<keepimg$1>" }}
                     {{ $content = $content | replaceRE "(?s)<img[^>]*>" "" }}
@@ -32,65 +31,8 @@
                     {{ $content | safeHTML }}
                 </div>
 
-                {{/* 图片展示 - 详情页使用大图垂直排列 */}}
-                {{ $images := .Params.images }}
-                {{ if not $images }}
-                    {{/* 如果没有在头部写图片，就去正文里抓 */}}
-                    {{ $contentForImages := .Content | replaceRE "<img[^>]*data-keep=\"1\"[^>]*>" "" }}
-                    {{ $imgTags := findRE "<img[^>]+src=\"([^\"]+)\"[^>]*>" $contentForImages }}
-                    {{ if $imgTags }}
-                        {{ $images = slice }}
-                        {{ range $imgTags }}
-                            {{ $src := replaceRE "<img[^>]+src=\"([^\"]+)\"[^>]*>" "$1" . }}
-                            {{ $images = $images | append $src }}
-                        {{ end }}
-                        {{ $images = $images | uniq }}
-                    {{ end }}
-                {{ end }}
-
-                {{ if $images }}
-                {{ $currentPage := . }}
-                {{ $len := len $images }}
-                <div class="article-gallery">
-                    {{ if eq $len 1 }}
-                        {{/* 只有一张图时居中显示 */}}
-                        <div class="gallery-single">
-                            {{ range $images }}
-                                {{ $imgSrc := . }}
-                                {{ if not (findRE "^(http|/)" $imgSrc) }}
-                                    {{ with $currentPage.Resources.GetMatch $imgSrc }}
-                                        {{ $pbSlug := path.Base (path.Dir $currentPage.File.Dir) }}
-                                        {{ $imgSrc = printf "https://cdn.jsdelivr.net/gh/q3190872366/amigo-blog@master/content/posts/%s/%s" $pbSlug .Name }}
-                                    {{ else }}
-                                        {{ $pbSlug := path.Base (path.Dir $currentPage.File.Dir) }}
-                                        {{ $imgSrc = printf "https://cdn.jsdelivr.net/gh/q3190872366/amigo-blog@master/content/posts/%s/%s" $pbSlug $imgSrc }}
-                                    {{ end }}
-                                {{ end }}
-                                <img src="{{ $imgSrc }}" alt="Image" loading="lazy">
-                            {{ end }}
-                        </div>
-                    {{ else }}
-                        {{/* 多张图时的网格布局 */}}
-                        <div class="gallery-grid {{ if or (eq $len 2) (eq $len 4) }}cols-2{{ else }}cols-3{{ end }}">
-                            {{ range $images }}
-                                {{ $imgSrc := . }}
-                                {{ if not (findRE "^(http|/)" $imgSrc) }}
-                                    {{ with $currentPage.Resources.GetMatch $imgSrc }}
-                                        {{ $pbSlug := path.Base (path.Dir $currentPage.File.Dir) }}
-                                        {{ $imgSrc = printf "https://cdn.jsdelivr.net/gh/q3190872366/amigo-blog@master/content/posts/%s/%s" $pbSlug .Name }}
-                                    {{ else }}
-                                        {{ $pbSlug := path.Base (path.Dir $currentPage.File.Dir) }}
-                                        {{ $imgSrc = printf "https://cdn.jsdelivr.net/gh/q3190872366/amigo-blog@master/content/posts/%s/%s" $pbSlug $imgSrc }}
-                                    {{ end }}
-                                {{ end }}
-                                <div class="gallery-item">
-                                    <img src="{{ $imgSrc }}" alt="Image" loading="lazy">
-                                </div>
-                            {{ end }}
-                        </div>
-                    {{ end }}
-                </div>
-                {{ end }}
+                {{/* 图片展示区 - 由 JS 动态填充 */}}
+                <div class="article-gallery" id="article-gallery"></div>
 
             </div>
         </article>

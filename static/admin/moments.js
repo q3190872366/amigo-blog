@@ -6,6 +6,8 @@ let momTopic='';      // 选中话题
 let momLocation='';   // 选中的位置
 let _momTopTimer=null;
 let momActiveTab='normal'; // 当前选中的图片 Tab
+let editingSlug='';   // 编辑模式的动态 slug
+let editingSha=null;  // 编辑模式的文件 sha
 
 // 顶部状态条（上传进度显示）
 function momTopBar(msg){
@@ -21,8 +23,85 @@ function momTopBar(msg){
 if(!requireAuth()){
   // 不再继续执行
 }else{
-  momSlug=nowSlug();
-  loadTopics();
+  // 检查是否为编辑模式
+  const editParam=new URLSearchParams(location.search).get('edit');
+  if(editParam){
+    editingSlug=editParam;
+    loadMomentForEdit(editingSlug);
+  }else{
+    momSlug=nowSlug();
+    loadTopics();
+  }
+}
+
+// 加载动态内容进行编辑
+async function loadMomentForEdit(slug){
+  try{
+    const path=PP+'/'+slug+'/index.md';
+    const f=await gh('/contents/'+ghp(path));
+    editingSha=f.sha;
+    const raw=b64d(f.content);
+    const m=raw.match(/^---\n([\s\S]*?)\n---/);
+    const body=m?raw.replace(/^---\n[\s\S]*?\n---\n/,''):raw;
+    const fm=m?parseFM(raw):{};
+    
+    // 填充正文
+    I('mom-text').value=body.trim();
+    onText();
+    
+    // 填充话题
+    if(fm.tags&&fm.tags.length){
+      momTopic=Array.isArray(fm.tags)?fm.tags[0]:fm.tags;
+    }
+    
+    // 填充位置
+    if(fm.location){
+      momLocation=fm.location;
+      I('mom-loc-text').textContent=fm.location;
+    }
+    
+    // 解析正文中的图片引用
+    momImgs=[];
+    const imgRegex=/!\[([^\]]*)\]\(([^)]+)\)/g;
+    let match;
+    while((match=imgRegex.exec(body))!==null){
+      const alt=match[1];
+      const url=match[2];
+      const name=url.split('/').pop().split('?')[0];
+      // 判断图片类型
+      if(url.includes('livephoto')){
+        const liveMatch=body.match(/livephoto image="([^"]*)" video="([^"]*)"/);
+        if(liveMatch){
+          momImgs.push({name:alt||name,kind:'livephoto',imgUrl:liveMatch[1],vidUrl:liveMatch[2]});
+          continue;
+        }
+      }
+      if(url.includes('/api/r2/')){
+        momImgs.push({name:alt||name,url:url,kind:'r2'});
+      }else if(url.match(/^vid-/)){
+        momImgs.push({name:alt||name,url:url,kind:'r2-video'});
+      }else{
+        // 检查是否为视频 shortcode
+        const videoMatch=body.match(/\{\{<\s*video\s+src="([^"]*)"\s*>\}\}/);
+        if(videoMatch){
+          momImgs.push({name:alt||name,url:videoMatch[1],kind:'r2-video'});
+        }else{
+          momImgs.push({name:alt||name,url:url,kind:'lib'});
+        }
+      }
+    }
+    renderMomImgs();
+    
+    // 切换到编辑模式的UI
+    I('mom-publish').textContent='保存修改';
+    document.querySelector('.mom-title').textContent='编辑动态';
+    momSlug=slug; // 使用原slug，确保图片上传到正确目录
+    
+    T('已加载动态内容','ok');
+  }catch(e){
+    T('加载失败: '+e.message,'err');
+    setTimeout(()=>location.href='index.html',1500);
+  }
 }
 
 // 文本变化
@@ -371,16 +450,15 @@ function saveLocation(){
   T('位置已保存','ok');
 }
 
-// 发表
+// 发表 / 保存修改
 async function publishMoment(){
   const text=I('mom-text').value.trim();
   if(!text&&!momImgs.length){T('请输入内容','err');return}
   const btn=I('mom-publish');
   btn.disabled=true;
-  btn.textContent='发表中...';
-  I('mom-status').textContent='正在发表...';
+  btn.textContent=editingSlug?'保存中...':'发表中...';
+  I('mom-status').textContent=editingSlug?'正在保存修改...':'正在发表...';
   try{
-    // 如果有图片但是从媒体库导入的（没上传到当前动态目录），需要 copy 到当前目录
     const slug=momSlug;
     const path=PP+'/'+slug+'/index.md';
     let body=text;
@@ -393,7 +471,6 @@ async function publishMoment(){
         continue;
       }
       if(img.kind==='livephoto'){
-        // 实况图：用主题的 livephoto shortcode（URL 不 esc，避免 & 被双编码）
         if(img.vidUrl){
           body+='\n\n{{< livephoto image="'+img.imgUrl+'" video="'+img.vidUrl+'" >}}';
         }else{
@@ -405,9 +482,14 @@ async function publishMoment(){
         body+='\n\n{{< video src="'+img.url+'" >}}';
         continue;
       }
+      // 如果图片URL已包含完整路径（如原有的动态图片），直接使用
+      if(img.url&&!img.url.startsWith('/api/raw/')&&!img.url.startsWith('http')&&!img.url.startsWith('/')){
+        // 相对路径，转换为完整路径
+        body+='\n\n!['+(img.name.replace(/\.[^.]+$/,''))+']('+img.url+')';
+        continue;
+      }
       const localName=img.kind==='lib'?'img-'+Date.now().toString(36)+i+'-'+img.name:img.name;
       if(img.kind==='lib'){
-        // 从媒体库复制到当前目录
         I('mom-status').textContent='复制图片: '+img.name;
         const f=await gh('/contents/static/posts/images/'+encodeURIComponent(img.name));
         const targetPath=PP+'/'+slug+'/'+localName;
@@ -428,15 +510,19 @@ async function publishMoment(){
     if(momLocation)fm.push('location: "'+momLocation.replace(/"/g,'\\"')+'"');
 
     const content=b64e('---\n'+fm.join('\n')+'\n---\n\n'+body);
-    await gh('/contents/'+ghp(path),{method:'PUT',body:JSON.stringify({message:'admin: publish moment '+slug,content,branch:B})});
+    
+    // 编辑模式：更新文件（需要 sha）
+    const pb={message:editingSlug?'admin: update moment '+slug:'admin: publish moment '+slug,content,branch:B};
+    if(editingSlug&&editingSha)pb.sha=editingSha;
+    await gh('/contents/'+ghp(path),{method:'PUT',body:JSON.stringify(pb)});
 
-    T('发表成功','ok');
-    I('mom-status').textContent='✓ 发表成功';
+    T(editingSlug?'修改已保存':'发表成功','ok');
+    I('mom-status').textContent=editingSlug?'✓ 修改已保存':'✓ 发表成功';
     setTimeout(()=>location.href='index.html',600);
   }catch(e){
-    T('发表失败: '+e.message,'err');
+    T('操作失败: '+e.message,'err');
     I('mom-status').textContent='✗ '+e.message;
     btn.disabled=false;
-    btn.textContent='发表';
+    btn.textContent=editingSlug?'保存修改':'发表';
   }
 }

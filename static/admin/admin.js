@@ -6,6 +6,8 @@ let posts=[],imgs=[],curP=null,cv='dashboard';
 function init(){
   const s=localStorage.getItem('blog_adm3');
   if(s){try{const d=JSON.parse(s);P=d.pat||'';O=d.owner||'q3190872366';R=d.repo||'amigo-blog';B=d.branch||'master';PP=d.path||'content/posts';if(P)I('li-token').value=P;I('li-owner').value=O;I('li-repo').value=R}catch(_){}}
+  // 自动登录：如果有认证信息，直接进入后台
+  if(P){I('login').style.display='none';I('app').classList.add('open');loadDash()}
 }
 init();
 
@@ -113,9 +115,27 @@ function renderPosts(){
   I('p-list').innerHTML=fl.length?fl.map(p=>{
     const isMom=p.type==='moment';
     const icon=isMom?'💬':'📝';
-    const onclk=isMom?`editMom('${p.slug}')`:`editP('${p.slug}')`;
-    return `<div class="pitem" onclick="${onclk}"><div><div class="title">${icon} ${esc(p.title||p.slug)}</div><div class="meta">${p.date?p.date.slice(0,10):''}${(p.tags.length?' · '+p.tags.join(', '):'')}${(p.location?' · 📍 '+p.location:'')}</div></div><span class="badge ${(p.draft?'draft':'pub')}">${(isMom?'动态':p.draft?'草稿':'已发布')}</span></div>`;
+    const onEdit=isMom?`editMom('${p.slug}')`:`editP('${p.slug}')`;
+    const onPreview=isMom?`previewMom('${p.slug}')`:`previewP('${p.slug}')`;
+    const onDel=`delPost('${p.slug}')`;
+    return `<div class="pitem"><div><div class="title" onclick="${onEdit}">${icon} ${esc(p.title||p.slug)}</div><div class="meta">${p.date?p.date.slice(0,10):''}${(p.tags.length?' · '+p.tags.join(', '):'')}${(p.location?' · 📍 '+p.location:'')}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="badge ${(p.draft?'draft':'pub')}">${(isMom?'动态':p.draft?'草稿':'已发布')}</span><div class="p-actions"><button onclick="event.stopPropagation();${onPreview}" title="预览">👁 预览</button><button onclick="event.stopPropagation();${onEdit}" title="编辑">✏️ 编辑</button><button class="danger" onclick="event.stopPropagation();${onDel}" title="删除">🗑 删除</button></div></div></div>`;
   }).join(''):'<div class="empty">没有内容</div>';
+}
+// 预览文章（在新标签页打开）
+function previewP(slug){window.open('/post/'+slug+'/','_blank')}
+// 预览动态
+function previewMom(slug){window.open('/post/'+slug+'/','_blank')}
+// 删除文章/动态
+async function delPost(slug){
+  const p=posts.find(x=>x.slug===slug);
+  if(!p)return;
+  if(!confirm('确定删除「'+p.title+'」？此操作不可恢复！'))return;
+  try{
+    const dir=await gh('/contents/'+PP+'/'+slug);
+    for(const f of dir)if(f.sha)await gh('/contents/'+ghp(f.path),{method:'DELETE',body:JSON.stringify({message:'admin: delete '+f.name,sha:f.sha,branch:B})});
+    T('已删除','ok');
+    loadPosts();
+  }catch(e){T('删除失败: '+e.message,'err')}
 }
 function fmDefault(){const n=new Date();return {title:'新文章',slug:'',date:n.toISOString().slice(0,10),draft:true,author:'',summary:'',cover:'',comments:true,categories:[],tags:[]}}
 function fillFmForm(fm){I('em-t').value=fm.title||'';I('em-slug').value=fm.slug||'';I('em-date').value=(fm.date||'').slice(0,10);I('em-author').value=fm.author||'';I('em-cats').value=Array.isArray(fm.categories)?fm.categories.join(','):(fm.categories||'');I('em-tags').value=Array.isArray(fm.tags)?fm.tags.join(','):(fm.tags||'');I('em-summary').value=fm.summary||'';I('em-sub').textContent=fm.title||'新文章';updateFolder()}

@@ -2801,10 +2801,17 @@ body:has(.view-image) .single-header {
 }
 
 .single-view .article-gallery .gallery-grid {
-    display: flex;
-    flex-direction: column;
+    display: grid;
     gap: 12px;
     max-width: 100%;
+}
+
+.single-view .article-gallery .gallery-grid.cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.single-view .article-gallery .gallery-grid.cols-3 {
+    grid-template-columns: repeat(3, 1fr);
 }
 
 .single-view .article-gallery .gallery-item {
@@ -2820,6 +2827,53 @@ body:has(.view-image) .single-header {
     cursor: pointer;
     display: block;
     border-radius: 8px;
+}
+
+/* single-view 中 gallery-item 内的 livephoto 样式 */
+.single-view .article-gallery .gallery-item.is-live {
+    overflow: hidden;
+}
+
+.single-view .article-gallery .gallery-item.is-live .live-photo {
+    margin: 0;
+    border-radius: 8px;
+    max-width: 100%;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+}
+
+.single-view .article-gallery .gallery-item.is-live .live-photo-mute-btn {
+    right: 6px;
+    bottom: 6px;
+}
+
+/* single-view 中 gallery-single 内的 livephoto 样式 */
+.single-view .article-gallery .gallery-single .live-photo {
+    max-width: min(420px, 100%);
+    margin: 16px auto;
+    border-radius: 8px;
+}
+
+/* 确保 live-photo 容器正确裁剪子元素 */
+.live-photo {
+    overflow: hidden;
+}
+
+/* 修复静音按钮溢出问题 */
+.live-photo .live-photo-mute-btn {
+    position: absolute;
+    right: 6px;
+    bottom: 6px;
+    z-index: 10;
+    width: 28px;
+    height: 28px;
+    box-sizing: border-box;
+}
+
+.live-photo .live-photo-mute-btn svg {
+    position: relative;
+    width: 14px;
+    height: 14px;
 }
 
 /* Code Blocks (Dracula Theme Basics) */
