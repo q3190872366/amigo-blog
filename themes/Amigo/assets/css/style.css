@@ -262,9 +262,9 @@ blockquote {
     max-width: min(360px, 100%);
     margin: 12px auto;
     aspect-ratio: var(--live-photo-aspect);
-    background: var(--bg-hover);
+    background: transparent;
     container-type: inline-size;
-    cursor: zoom-in;
+    cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -273,19 +273,7 @@ blockquote {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
 }
 
-.live-photo:hover .live-photo-poster {
-    transform: scale(1.03);
-}
-
-.live-photo .live-photo-poster {
-    transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
-.moments-feed.single-view .article-text .live-photo {
-    max-width: min(420px, 100%);
-    margin: 16px auto;
-}
-
+/* 封面图 */
 .live-photo .live-photo-poster {
     position: absolute;
     inset: 0;
@@ -293,14 +281,55 @@ blockquote {
     height: 100%;
     object-fit: cover;
     z-index: 0;
+    transition: transform 0.3s ease, opacity 0.25s ease;
 }
 
-/* 实况角标 */
+.live-photo:hover .live-photo-poster {
+    transform: scale(1.03);
+}
+
+/* 视频（悬停播放层） */
+.live-photo .live-photo-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+/* 悬停时播放视频 */
+.live-photo:hover .live-photo-video {
+    opacity: 1;
+}
+
+.live-photo:hover .live-photo-poster {
+    opacity: 0;
+}
+
+/* 视频结束后回到封面 */
+.live-photo.video-ended .live-photo-video {
+    opacity: 0;
+}
+
+.live-photo.video-ended .live-photo-poster {
+    opacity: 1;
+}
+
+.moments-feed.single-view .article-text .live-photo {
+    max-width: min(420px, 100%);
+    margin: 16px auto;
+}
+
+/* 实况角标（左上角） */
 .live-photo-badge {
     position: absolute;
     left: 6px;
     top: 6px;
-    z-index: 3;
+    z-index: 5;
     display: flex;
     align-items: center;
     gap: 3px;
@@ -313,7 +342,6 @@ blockquote {
     font-size: 10px;
     font-weight: 500;
     white-space: nowrap;
-    transition: opacity 0.3s ease;
 }
 
 .live-photo-badge-icon {
@@ -328,12 +356,84 @@ blockquote {
     to { transform: rotate(360deg); }
 }
 
-.live-photo:hover .live-photo-badge {
+/* 静音按钮（右下角） */
+.live-photo-mute-btn {
+    position: absolute;
+    right: 6px;
+    bottom: 6px;
+    z-index: 5;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    opacity: 1;
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.live-photo-mute-btn:hover {
+    background: rgba(0, 0, 0, 0.75);
+    transform: scale(1.1);
+}
+
+.live-photo-mute-btn svg {
+    width: 14px;
+    height: 14px;
+    position: absolute;
+    transition: opacity 0.15s ease;
+}
+
+/* 默认静音状态：显示"声音关闭"图标 */
+.live-photo-mute-btn .icon-on {
+    opacity: 0;
+}
+.live-photo-mute-btn .icon-off {
     opacity: 1;
 }
 
-/* 视频弹窗 */
-.live-photo-video-lightbox {
+/* 取消静音时：显示"声音开启"图标 */
+.live-photo:not(.is-muted) .live-photo-mute-btn .icon-on {
+    opacity: 1;
+}
+.live-photo:not(.is-muted) .live-photo-mute-btn .icon-off {
+    opacity: 0;
+}
+
+/* 点击播放提示（悬停时中央显示） */
+.live-photo-play-hint {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    background: rgba(0, 0, 0, 0.25);
+}
+
+.live-photo-play-hint svg {
+    width: 36px;
+    height: 36px;
+    color: #fff;
+    filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.5));
+}
+
+.live-photo:hover .live-photo-play-hint {
+    opacity: 1;
+}
+
+/* 灯箱（点击打开） */
+.live-photo-lightbox {
     display: none;
     position: fixed;
     inset: 0;
@@ -345,7 +445,7 @@ blockquote {
     justify-content: center;
 }
 
-.live-photo-video-lightbox.on {
+.live-photo-lightbox.on {
     display: flex;
 }
 
@@ -357,10 +457,60 @@ blockquote {
     animation: lightboxInImg 0.3s ease;
 }
 
+.live-photo-lightbox-poster {
+    max-width: 95vw;
+    max-height: 95vh;
+    object-fit: contain;
+    border-radius: 4px;
+    animation: lightboxInImg 0.3s ease;
+    display: none;
+}
+
 /* 适配画廊中的实况图 */
 .moment-livephotos .live-photo {
     max-width: none;
     margin: 0;
+}
+
+.moment-livephotos .gallery-item .live-photo {
+    position: absolute;
+    inset: 0;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    border-radius: 0;
+    aspect-ratio: auto !important;
+}
+
+.moment-livephotos .gallery-item .live-photo-badge {
+    left: 3px;
+    top: 3px;
+    font-size: 9px;
+    padding: 1px 4px;
+    gap: 2px;
+}
+
+.moment-livephotos .gallery-item .live-photo-badge-icon {
+    width: 12px;
+    height: 12px;
+}
+
+.moment-livephotos .gallery-item .live-photo-mute-btn {
+    width: 22px;
+    height: 22px;
+    right: 3px;
+    bottom: 3px;
+}
+
+.moment-livephotos .gallery-item .live-photo-mute-btn svg {
+    width: 12px;
+    height: 12px;
+}
+
+.moment-livephotos .gallery-item .live-photo-play-hint svg {
+    width: 24px;
+    height: 24px;
 }
 
 .moments-header .danmaku-root {
@@ -3003,7 +3153,7 @@ body {
     margin: 20px 0;
     border-radius: 16px;
     overflow: hidden;
-    background: var(--bg-card);
+    background: transparent;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
     cursor: zoom-in;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -3017,18 +3167,58 @@ body {
 .live-card-container {
     position: relative;
     width: 100%;
-    padding-top: 100%;
     overflow: hidden;
-    background: var(--bg-hover);
+    background: transparent;
 }
 
-.live-card-img {
+.live-card.live-photo {
+    aspect-ratio: auto;
+    max-width: min(360px, 100%);
+    margin: 20px auto;
+    overflow: visible;
+    background: transparent;
+}
+
+.live-card.live-photo .live-card-container {
+    aspect-ratio: var(--live-photo-aspect);
+}
+
+.live-card.live-photo .live-card-img {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.live-card.live-photo .live-photo-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.live-card.live-photo:hover .live-photo-video {
+    opacity: 1;
+}
+
+.live-card.live-photo:hover .live-card-img {
+    opacity: 0;
+}
+
+.live-card.live-photo .live-photo-badge {
+    left: 8px;
+    top: 8px;
+}
+
+.live-card.live-photo .live-photo-mute-btn {
+    right: 8px;
+    bottom: 8px;
 }
 
 /* 说明文字 */
@@ -3042,7 +3232,7 @@ body {
 
 /* 深色模式适配 */
 [data-theme="dark"] .live-card {
-    background: var(--bg-input);
+    background: transparent;
 }
 
 /* ==========================================================================

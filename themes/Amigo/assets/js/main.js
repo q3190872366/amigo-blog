@@ -109,8 +109,6 @@ document.addEventListener("DOMContentLoaded", function() {
     initHomeSearch();
     initDanmaku();
     initMusicPlayers();
-    initLivePhotoCards();
-    initMusicCardPlayers();
     initMotionPhotos();
     initVideoPlayers();
     initVoiceMessages();
@@ -143,7 +141,6 @@ document.addEventListener("pjax:complete", function() {
     initArchiveFilter();
     initHomeSearch();
     initDanmaku();
-    initLivePhotoCards();
     initMotionPhotos();
     initVideoPlayers();
     initVoiceMessages();
@@ -152,7 +149,6 @@ document.addEventListener("pjax:complete", function() {
         attachPlayingMusicPlayer();
     } else {
         initMusicPlayers();
-        initMusicCardPlayers();
     }
 });
 
@@ -1398,84 +1394,153 @@ function initHeaderMedia() {
 }
 
 function initLivePhotoShortcodes() {
-    // 新版实况图：封面图 + 角标，点击弹窗播放
+    // 创建全局灯箱（如果还没有的话）
+    if (!document.getElementById('live-photo-global-lightbox')) {
+        var lb = document.createElement('div');
+        lb.id = 'live-photo-global-lightbox';
+        lb.className = 'live-photo-lightbox';
+        lb.innerHTML = '<button class="live-photo-lightbox-close" aria-label="关闭">✕</button>' +
+            '<video class="live-photo-lightbox-video" playsinline aria-label="实况视频"></video>' +
+            '<img class="live-photo-lightbox-poster" alt="">';
+        lb.addEventListener('click', function(e) {
+            if (e.target === lb || e.target.classList.contains('live-photo-lightbox-close')) {
+                closeLivePhotoLightbox();
+            }
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeLivePhotoLightbox();
+        });
+        document.body.appendChild(lb);
+    }
+
     document.querySelectorAll('.live-photo, .live-card').forEach(function(el) {
         if (el.__liveBound) return;
         el.__liveBound = true;
 
         var posterImg = el.querySelector('img.live-photo-poster, img.live-card-img') || el.querySelector('img');
+        var videoEl = el.querySelector('video.live-photo-video');
+        var muteBtn = el.querySelector('.live-photo-mute-btn');
+        var isMuted = true;
+        var hoverTimer = null;
 
-        // 同步宽高比（从封面图自动获取）
-        function syncAspectFromPoster() {
+        // 懒加载视频
+        if (videoEl && videoEl.dataset.src) {
+            videoEl.src = videoEl.dataset.src;
+        }
+
+        // 同步宽高比
+        function syncAspect() {
             if (!posterImg) return;
             var w = posterImg.naturalWidth || 0;
             var h = posterImg.naturalHeight || 0;
             if (!w || !h) return;
             el.style.setProperty('--live-photo-aspect', w + ' / ' + h);
         }
+        if (posterImg && posterImg.complete) { syncAspect(); }
+        else if (posterImg) { posterImg.addEventListener('load', syncAspect, { once: true }); }
 
-        if (posterImg && posterImg.complete) {
-            syncAspectFromPoster();
-        } else if (posterImg) {
-            posterImg.addEventListener('load', syncAspectFromPoster, { once: true });
-        }
-    });
+        // 悬停播放
+        el.addEventListener('mouseenter', function() {
+            if (hoverTimer) clearTimeout(hoverTimer);
+            hoverTimer = setTimeout(function() {
+                if (videoEl) {
+                    videoEl.muted = isMuted;
+                    videoEl.currentTime = 0;
+                    var p = videoEl.play();
+                    if (p && p.catch) p.catch(function(){});
+                }
+            }, 150);
+        });
 
-    // ESC 关闭视频弹窗
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeLivePhotoVideo();
-            closeLivePhotoLightbox();
+        el.addEventListener('mouseleave', function() {
+            if (hoverTimer) { clearTimeout(hoverTimer); hoverTimer = null; }
+            if (videoEl && !videoEl.paused) {
+                videoEl.pause();
+                videoEl.currentTime = 0;
+            }
+        });
+
+        // 静音按钮
+        if (muteBtn) {
+            muteBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                isMuted = !isMuted;
+                muteBtn.dataset.muted = isMuted ? 'true' : 'false';
+                el.classList.toggle('is-muted', isMuted);
+                if (videoEl) videoEl.muted = isMuted;
+            });
         }
+
+        // 点击打开灯箱
+        el.addEventListener('click', function(e) {
+            if (e.target.closest('.live-photo-mute-btn')) return;
+            var videoUrl = el.getAttribute('data-video');
+            var posterSrc = posterImg ? posterImg.src : '';
+            var alt = el.getAttribute('data-alt') || '';
+            openLivePhotoLightbox(videoUrl, posterSrc, alt, isMuted);
+        });
     });
 }
 
 // ===== Live Photo Lightbox =====
-function openLivePhotoVideo(el) {
-    if (!el) return;
-    var videoUrl = el.getAttribute('data-video');
-    if (!videoUrl) return;
-    var lb = document.getElementById('live-photo-video-lightbox');
-    var video = document.getElementById('live-photo-lightbox-video');
+function openLivePhotoLightbox(videoUrl, posterSrc, alt, isMuted) {
+    var lb = document.getElementById('live-photo-global-lightbox');
+    var video = lb.querySelector('.live-photo-lightbox-video');
+    var poster = lb.querySelector('.live-photo-lightbox-poster');
     if (!lb || !video) return;
+
+    // 显示海报初始
+    poster.src = posterSrc;
+    poster.alt = alt || '';
+    poster.style.display = 'none';
+    video.style.display = 'block';
+
+    if (!videoUrl) {
+        // 没有视频，直接显示封面
+        video.style.display = 'none';
+        poster.style.display = 'block';
+        lb.classList.add('on');
+        document.body.style.overflow = 'hidden';
+        return;
+    }
+
+    // 设置视频
     video.src = videoUrl;
+    video.muted = !!isMuted;
+    video.currentTime = 0;
     video.load();
+
+    // 播放视频
     var p = video.play();
-    if (p && p.catch) { p.catch(function(){}); }
+    if (p && p.catch) p.catch(function() {
+        // 播放失败（如视频不存在），显示封面
+        video.style.display = 'none';
+        poster.style.display = 'block';
+    });
+
+    // 视频结束后显示封面
+    video.onended = function() {
+        video.style.display = 'none';
+        poster.style.display = 'block';
+    };
+
+    // 视频加载错误，显示封面
+    video.onerror = function() {
+        video.style.display = 'none';
+        poster.style.display = 'block';
+    };
+
     lb.classList.add('on');
     document.body.style.overflow = 'hidden';
-}
-function closeLivePhotoVideo(e) {
-    if (e && e.target !== e.currentTarget && !e.target.classList.contains('live-photo-lightbox-close')) return;
-    var lb = document.getElementById('live-photo-video-lightbox');
-    var video = document.getElementById('live-photo-lightbox-video');
-    if (!lb) return;
-    if (video) {
-        video.pause();
-        video.src = '';
-    }
-    lb.classList.remove('on');
-    document.body.style.overflow = '';
 }
 
-// 保留旧版图片 Lightbox（兼容旧博客内容）
-function openLivePhotoLightbox(e, btn) {
-    if (btn) e.stopPropagation();
-    var wrapper = e.currentTarget || e.target.closest('.live-photo');
-    if (!wrapper) return;
-    var poster = wrapper.querySelector('.live-photo-poster');
-    if (!poster || !poster.src) return;
-    var lb = document.getElementById('live-photo-lightbox');
-    var img = document.getElementById('live-photo-lightbox-img');
-    if (!lb || !img) return;
-    img.src = poster.src;
-    img.alt = poster.alt || '';
-    lb.classList.add('on');
-    document.body.style.overflow = 'hidden';
-}
 function closeLivePhotoLightbox() {
-    var lb = document.getElementById('live-photo-lightbox');
+    var lb = document.getElementById('live-photo-global-lightbox');
     if (!lb) return;
+    var video = lb.querySelector('.live-photo-lightbox-video');
+    var poster = lb.querySelector('.live-photo-lightbox-poster');
+    if (video) { video.pause(); video.src = ''; }
+    if (poster) { poster.style.display = 'none'; }
     lb.classList.remove('on');
     document.body.style.overflow = '';
 }
