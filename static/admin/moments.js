@@ -2,6 +2,7 @@
 let momImgs=[];       // [{name,url,path,kind:'new'|'lib'}]
 let momSlug='';       // 当前动态的目录名（图片上传用）
 let momLibImgs=[];    // 媒体库缓存
+let momLibFiltered=[]; // 媒体库过滤后的列表
 let momTopic='';      // 选中话题
 let momLocation='';   // 选中的位置
 let _momTopTimer=null;
@@ -521,8 +522,6 @@ function filterMomLib(){
     '</div>';
   }).join('');
 }
-
-let momLibFiltered=[];
 
 function pickLibByIndex(i){
   const x=momLibFiltered[i];
