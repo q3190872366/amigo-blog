@@ -265,6 +265,20 @@ blockquote {
     background: var(--bg-hover);
     container-type: inline-size;
     cursor: zoom-in;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.live-photo:hover {
+    transform: scale(1.01);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.live-photo:hover .live-photo-poster {
+    transform: scale(1.03);
+}
+
+.live-photo .live-photo-poster {
+    transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 .moments-feed.single-view .article-text .live-photo {
@@ -272,185 +286,81 @@ blockquote {
     margin: 16px auto;
 }
 
-.live-photo .live-photo-video {
-    position: absolute;
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    inset: 0;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    z-index: 1;
-}
 .live-photo .live-photo-poster {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 1;
-    transition: opacity 0.25s ease;
     z-index: 0;
 }
-.live-photo.is-playing .live-photo-video {
-    opacity: 1;
-}
-.live-photo.is-playing .live-photo-poster {
-    opacity: 0;
-}
 
-.live-photo .live-photo-controls-group {
+/* 实况角标 */
+.live-photo-badge {
     position: absolute;
-    left: 10px;
-    top: 10px;
+    left: 6px;
+    top: 6px;
+    z-index: 3;
     display: flex;
     align-items: center;
-    gap: 6px;
-    z-index: 2;
-}
-
-.live-photo .live-photo-control-btn {
-    border: none;
-    padding: 4px 8px;
-    border-radius: var(--border-radius);
-    height: 24px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background-color: transparent;
-    color: #606060;
-    cursor: pointer;
-    user-select: none;
-    border: 1px solid rgba(255, 255, 255, 0.7);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
-}
-
-.live-photo .live-photo-control-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-    background-color: transparent;
-}
-
-.live-photo .live-photo-toggle-btn {
-    background-color: rgba(44, 44, 46, 0.62);
-    border-color: rgba(255, 255, 255, 0.22);
-    color: rgb(205 205 205 / 92%);
-}
-
-.live-photo .live-photo-toggle-btn:hover {
-    background-color: rgba(44, 44, 46, 0.72);
-}
-
-.live-photo .live-photo-mute-btn {
-    background-color: rgba(44, 44, 46, 0.35);
-    border-color: rgba(255, 255, 255, 0.18);
-    color: rgb(205 205 205 / 92%);
-}
-
-.live-photo .live-photo-mute-btn:hover {
-    background-color: rgba(44, 44, 46, 0.42);
-}
-
-.live-photo-toggle-btn i.icon-live {
-    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAB4CAMAAAAOusbgAAAAM1BMVEX///+OjpOOjpOOjpOOjpOOjpOOjpOOjpOOjpOOjpOOjpOOjpOOjpOOjpOOjpOOjpOOjpMym3PHAAAAEXRSTlMAMEAQsP/AIKDggHDQkPBQYHOKyH4AAAUWSURBVHgBYhg6gJEJQgNoMcPsWEEYCguQCKiB/a/2lecp1hgm4sx8v3La1huSG0CdB0C3x3b+vm4AiKYGCX4INTKxBl9mqXKxRlgjrNFao+VbghhMk4OzMLTIBPxwAhsA0LxXGoDqj3KNco2oRttPMNMefBCopN9nl91RW9h9Vn6zSlD5jvDklmQvRk+Lm94W5o+cm3/spGDhh7VG85LMO7qtiAaB0qSSCNAcDXkOtVkdoVnwOW1QBsF3mx2bp8ZIbZt5iIltPx7C4b6xDuMCrXmXfmjOeR+BvMbgRntkp7exox4B1c0D7oaPCZuSPK7wnxV9yuZjwr5bapMQrpBfTLfUfsRcCTELqluELjEJ15CMmNz0JmUFBZbs2Bz19uQS4Qax9Pbw4PQ5Krrsilv6z4asDquVzxrAB5uzQTigwI1kF09w4N2DrRskGyZo0NYZnRwObeKt9rrwdp0jh4d5yk3zBXedqk27TfqzrqEmq99AsHX6XBjrh2+fpflVkWUmJN6Sp7rp7jxuUGGzoSUbnKw7dLba2FF2AWK+d4IVNiAazI1FP2vbzIi6afw03DHXUd1uCBu9WYo1yFyEk36CzaTp6sqru3HWWn8+wVZdV1f27Ky1k0pS+qsRHuZt4N17l4cKzdMYyHs0jIus2BIbn9XC5oFjk8cIENEn+/Juy+zk8DRRC6+qo1cNtoHgDxTsK5vES+cXVtfOv3ByhAsxvyh2kS8azQd0WbC0kBlBBCUT5Uv+dG67ZXUtLTFOIehApWvRwkpp/3bNF/52ClY0YZ9N9BdbQfHBKjOM/c2/Q+gt2QxtOlnX1ZVLpxYyJFu6gEpRnsUoaXGsMUKWhkBB2iC3S63dkspRwVX4Wway0Q0p5xTYUKPsl8ROvXD8qrDzMHYLza66GV8XO7J8cluW5TnJPolwQMvpKk5wELV389RG1dG5slbMPMMBmRfdz2Kl7Ln25GqYCaiwEwO4S3xXlyl7scnLafOj3H19Ar7fw8EifrdvOPnDrw5K7sx943LLZ/l5Oqi8qfIH88QSb5IuLJeGrYj6u90OijnLnw8x3xcOsrC7Ldw+MyIzsSgsV1LuhSI879lxIVW4yML/qjeLHAliGIqGisL3P+2smtyy5F9J2pqsCx0w/OcufnF8rH21F9PscZmpaT7szysCiyuML669nl5rO+kfIPpH5riTMGInYa9fu8XLGs1AQC30GQz2HBLsPZ9j9cJbIKDfJgf0C1IYaukKJW1uRtLWoKTN0Q25JE3lE/ODeTOcmGcmMedKEefCUgRefLFI8cXxxRe+3MS6lC4uNxmu3PT5nvBdYEvTC2yBPLZQFCAx5wFSUrRkb5OSIjMyXY/w8PlpV42y8QazbZEaCr9fyJe5fYE0sH9KA8GZ34ghlYohIt2pLZF/AMELf3N83ijVnfZvL46vbR+kEt/zKAye8Ub5wMAkVtQUG68840rUzFufJCBnB2i4jJeEpHp3S6q/GKkegROOLCRb+hvFIIMTABzj4nAMWypNNCAcg4nK80ck32nulM7KByM00ACRmypFbq52C7nxgYGMfKxjkFHwK7Eqfg+tBMnKOEgGo3PbPgmdw2DBjsGC+nikPhBKPNhQB4S1BCBSgX7xsY9gzlkf7NZH2XF43++imKLXbfcz4H3jYrzXrhCjm9+gYYEGjSUtKWdZ2JJCm3AK14RzAk04Om1H+o1W+NlQ7TMSPh+F8t0sH9Z52kznnTX/ZvwBSmxeg6qlDAUAAAAASUVORK5CYII=);
-    background-size: 16px 16px;
-    background-repeat: no-repeat;
-    background-position: 50%;
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    flex-shrink: 0;
-    margin-right: 4px;
-    content: none;
-    font-size: 0;
-    position: relative;
-}
-
-.live-photo-toggle-btn i.icon-live::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 12px;
-    height: 12px;
-    border-radius: 999px;
-    border: 1.5px solid rgba(255, 255, 255, 0.9);
-    transform: translate(-50%, -50%) scale(0.6);
-    opacity: 0;
-    pointer-events: none;
-}
-.live-photo-toggle-btn[data-state="live"] i.icon-live::after {
-    animation: liveRing 1.2s ease-out infinite;
-}
-
-.live-photo-control-btn:hover i.icon-live,
-.live-photo-control-btn:hover i.icon-muted,
-.live-photo-control-btn:hover i.icon-unmuted {
-    animation: liveIconFloat 0.8s ease-in-out infinite;
-}
-
-.live-photo-mute-btn .live-photo-mute-icon {
-    display: block;
-    width: 18px;
-    height: 18px;
-    font-size: 15px;
-    line-height: 19px;
-    color: rgb(205 205 205 / 92%);
-}
-
-.live-photo-mute-btn[data-muted="true"] .icon-unmuted { display: none; }
-.live-photo-mute-btn[data-muted="false"] .icon-muted { display: none; }
-
-.live-photo .live-photo-live-label,
-.live-photo .live-photo-mute-label {
-    font-size: 12px;
-    line-height: 1;
-    letter-spacing: 0.02em;
+    gap: 3px;
+    padding: 2px 6px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 500;
     white-space: nowrap;
+    transition: opacity 0.3s ease;
 }
 
-.live-photo-mute-label {
-    color: rgb(205 205 205 / 92%);
+.live-photo-badge-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    animation: live-badge-spin 5s linear infinite;
 }
 
-@container (max-width: 200px) {
-    .live-photo .live-photo-mute-label { display: none; }
-}
-.live-photo .warning {
-    padding: 4px 6px;
-    margin: 10px;
-    color: #9a6700;
-    border-radius: var(--border-radius);
-    position: absolute;
-    left: 0;
-    top: 44px;
-    background-color: rgba(240, 255, 255, 0.6705882353);
-    transition: opacity 0.5s linear;
-}
-.live-photo .warning.show {
-    opacity: 1 !important;
-    display: inline-block !important;
+@keyframes live-badge-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
-@keyframes liveRing {
-    0% {
-        transform: translate(-50%, -50%) scale(0.6);
-        opacity: 0.7;
-    }
-    100% {
-        transform: translate(-50%, -50%) scale(2.2);
-        opacity: 0;
-    }
+.live-photo:hover .live-photo-badge {
+    opacity: 1;
 }
 
-@keyframes liveIconFloat {
-    0% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(-1px) scale(1.04); }
-    100% { transform: translateY(0) scale(1); }
+/* 视频弹窗 */
+.live-photo-video-lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.92);
+    cursor: zoom-out;
+    animation: lightboxIn 0.25s ease;
+    align-items: center;
+    justify-content: center;
+}
+
+.live-photo-video-lightbox.on {
+    display: flex;
+}
+
+.live-photo-lightbox-video {
+    max-width: 95vw;
+    max-height: 95vh;
+    object-fit: contain;
+    border-radius: 4px;
+    animation: lightboxInImg 0.3s ease;
+}
+
+/* 适配画廊中的实况图 */
+.moment-livephotos .live-photo {
+    max-width: none;
+    margin: 0;
 }
 
 .moments-header .danmaku-root {
@@ -1458,48 +1368,22 @@ body:has(.view-image) .single-header {
     aspect-ratio: auto !important;
 }
 
-.moment-livephotos .gallery-item .live-photo-video,
-.moment-livephotos .gallery-item .live-photo-poster {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.moment-livephotos .gallery-item .live-photo-badge {
+    left: 3px;
+    top: 3px;
+    font-size: 9px;
+    padding: 1px 4px;
+    gap: 2px;
 }
 
-.moment-livephotos .gallery-item .live-photo-controls-group {
-    left: 4px;
-    top: 4px;
-    gap: 4px;
-}
-
-.moment-livephotos .gallery-item .live-photo-control-btn {
-    font-size: 12px;
-    padding: 2px 4px;
-    height: 20px;
-    min-width: 20px;
-    border-radius: 4px;
-}
-
-.moment-livephotos .gallery-item .live-photo-live-label,
-.moment-livephotos .gallery-item .live-photo-mute-label {
-    display: none;
-}
-
-.moment-livephotos .gallery-item .live-photo-toggle-btn i.icon-live {
+.moment-livephotos .gallery-item .live-photo-badge-icon {
     width: 12px;
     height: 12px;
-    background-size: 12px 12px;
-    margin-right: 0;
 }
 
 @media (max-width: 420px) {
     .moment-livephotos {
         --live-grid-size: 96px;
-    }
-}
-
-@media (max-width: 680px) {
-    .moments-feed:not(.single-view) .live-photo .live-photo-mute-btn {
-        display: none;
     }
 }
 
@@ -3114,12 +2998,20 @@ body {
    精美 Live 动图卡片样式
    ========================================================================== */
 
+/* Live Card 样式（新版：封面图+角标，点击弹窗播放） */
 .live-card {
     margin: 20px 0;
     border-radius: 16px;
     overflow: hidden;
     background: var(--bg-card);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    cursor: zoom-in;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.live-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
 }
 
 .live-card-container {
@@ -3127,171 +3019,16 @@ body {
     width: 100%;
     padding-top: 100%;
     overflow: hidden;
-    background: #000;
+    background: var(--bg-hover);
 }
 
-.live-card-img,
-.live-card-video {
+.live-card-img {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-}
-
-.live-card-img {
-    z-index: 1;
-}
-
-.live-card-video {
-    z-index: 2;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.live-card.playing .live-card-video {
-    opacity: 1;
-}
-
-/* LIVE 标签 */
-.live-card-badge {
-    position: absolute;
-    top: 16px;
-    left: 16px;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 20px;
-    color: white;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
-
-.live-badge-dot {
-    width: 8px;
-    height: 8px;
-    background: #ff3b30;
-    border-radius: 50%;
-    animation: livePulse 1.5s ease-in-out infinite;
-}
-
-@keyframes livePulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.8); }
-}
-
-/* 播放按钮 */
-.live-card-play-btn {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 10;
-    width: 72px;
-    height: 72px;
-    background: rgba(255, 255, 255, 0.9);
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #333;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
-}
-
-.live-card-play-btn:hover {
-    transform: translate(-50%, -50%) scale(1.1);
-    background: white;
-}
-
-.live-card-play-btn:active {
-    transform: translate(-50%, -50%) scale(0.95);
-}
-
-.live-card-play-btn i {
-    font-size: 36px;
-    margin-left: 4px;
-}
-
-.live-card.playing .live-card-play-btn {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.live-card.playing .live-card-play-btn i::before {
-    content: "\ea77";
-}
-
-.live-card.playing:hover .live-card-play-btn {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-/* 控制栏 */
-.live-card-controls {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.live-ctrl-btn {
-    width: 40px;
-    height: 40px;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    transition: all 0.2s ease;
-}
-
-.live-ctrl-btn:hover {
-    background: rgba(0, 0, 0, 0.7);
-    transform: scale(1.1);
-}
-
-.live-ctrl-btn:active {
-    transform: scale(0.95);
-}
-
-.live-ctrl-btn i {
-    font-size: 18px;
-}
-
-/* 进度条 */
-.live-card-progress {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 10;
-    height: 3px;
-    background: rgba(255, 255, 255, 0.3);
-}
-
-.live-card-progress-bar {
-    height: 100%;
-    background: white;
-    width: 0%;
-    transition: width 0.1s linear;
 }
 
 /* 说明文字 */
@@ -3306,15 +3043,6 @@ body {
 /* 深色模式适配 */
 [data-theme="dark"] .live-card {
     background: var(--bg-input);
-}
-
-[data-theme="dark"] .live-card-play-btn {
-    background: rgba(255, 255, 255, 0.85);
-    color: #1a1a1a;
-}
-
-[data-theme="dark"] .live-card-play-btn:hover {
-    background: white;
 }
 
 /* ==========================================================================

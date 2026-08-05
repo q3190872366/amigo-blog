@@ -1398,185 +1398,67 @@ function initHeaderMedia() {
 }
 
 function initLivePhotoShortcodes() {
-    document.querySelectorAll('.live-photo').forEach(function(livePhoto) {
-        if (livePhoto.__liveBound) return;
-        livePhoto.__liveBound = true;
+    // 新版实况图：封面图 + 角标，点击弹窗播放
+    document.querySelectorAll('.live-photo, .live-card').forEach(function(el) {
+        if (el.__liveBound) return;
+        el.__liveBound = true;
 
-        var video = livePhoto.querySelector('video.live-photo-video') || livePhoto.querySelector('video');
-        var posterImg = livePhoto.querySelector('img.live-photo-poster') || livePhoto.querySelector('img');
-        var toggleBtn = livePhoto.querySelector('.live-photo-toggle-btn');
-        var muteBtn = livePhoto.querySelector('.live-photo-mute-btn');
-        var warning = livePhoto.querySelector('.warning');
+        var posterImg = el.querySelector('img.live-photo-poster, img.live-card-img') || el.querySelector('img');
 
-        if (!video || !toggleBtn || !muteBtn) return;
-
-        var HOVER_DELAY = 500;
-        var hoverTimer = null;
-        var isManuallyControlled = toggleBtn.getAttribute('data-state') === 'live';
-        var isLoaded = false;
-
-        function setWarning(text) {
-            if (!warning) return;
-            warning.textContent = text || '';
-            if (text) warning.classList.add('show');
-            else warning.classList.remove('show');
-        }
-
+        // 同步宽高比（从封面图自动获取）
         function syncAspectFromPoster() {
             if (!posterImg) return;
             var w = posterImg.naturalWidth || 0;
             var h = posterImg.naturalHeight || 0;
             if (!w || !h) return;
-            livePhoto.style.setProperty('--live-photo-aspect', w + ' / ' + h);
+            el.style.setProperty('--live-photo-aspect', w + ' / ' + h);
         }
 
         if (posterImg && posterImg.complete) {
             syncAspectFromPoster();
         } else if (posterImg) {
-            posterImg.addEventListener('load', function() {
-                syncAspectFromPoster();
-            }, { once: true });
+            posterImg.addEventListener('load', syncAspectFromPoster, { once: true });
         }
+    });
 
-        function ensureLoaded() {
-            if (isLoaded) return;
-            isLoaded = true;
-            var src = (video.dataset && video.dataset.src) ? video.dataset.src : '';
-            if (src && !video.getAttribute('src')) {
-                video.setAttribute('src', src);
-                video.src = src;
-            }
-            try { video.load(); } catch (e) {}
+    // ESC 关闭视频弹窗
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeLivePhotoVideo();
+            closeLivePhotoLightbox();
         }
-
-        function setMuted(isMuted) {
-            video.muted = !!isMuted;
-            if (isMuted) video.setAttribute('muted', '');
-            else video.removeAttribute('muted');
-            muteBtn.setAttribute('data-muted', isMuted ? 'true' : 'false');
-        }
-
-        function getMuted() {
-            return muteBtn.getAttribute('data-muted') !== 'false';
-        }
-
-        if (!video.hasAttribute('muted')) setMuted(true);
-        else setMuted(getMuted());
-
-        function stopVideo(force) {
-            if (!force && isManuallyControlled) return;
-            if (hoverTimer) {
-                clearTimeout(hoverTimer);
-                hoverTimer = null;
-            }
-            livePhoto.classList.remove('is-playing');
-            setWarning('');
-            try { video.pause(); } catch (e) {}
-            try { video.currentTime = 0; } catch (e) {}
-        }
-
-        async function playVideo(opts) {
-            ensureLoaded();
-            setWarning('');
-
-            var wantUnmute = opts && opts.unmute === true;
-            if (wantUnmute) setMuted(false);
-            else setMuted(getMuted());
-
-            try { video.currentTime = 0; } catch (e) {}
-
-            try {
-                var p = video.play();
-                if (p && typeof p.catch === 'function') await p;
-                livePhoto.classList.add('is-playing');
-                return;
-            } catch (e) {
-                if (!video.muted) {
-                    setMuted(true);
-                    try {
-                        var p2 = video.play();
-                        if (p2 && typeof p2.catch === 'function') await p2;
-                        livePhoto.classList.add('is-playing');
-                        return;
-                    } catch (e2) {}
-                }
-
-                if (e && e.name === 'AbortError') return;
-                if (e && e.name === 'NotAllowedError') {
-                    setWarning('浏览器未允许视频自动播放权限，无法播放实况照片。');
-                } else if (e && e.name === 'NotSupportedError') {
-                    setWarning('视频未加载完成或浏览器不支持播放此视频格式。');
-                } else {
-                    setWarning('其它错误：' + e);
-                }
-            }
-        }
-
-        function scheduleHoverPlay() {
-            if (isManuallyControlled) return;
-            if (hoverTimer) clearTimeout(hoverTimer);
-            hoverTimer = setTimeout(function() {
-                playVideo({ unmute: false });
-            }, HOVER_DELAY);
-        }
-
-        livePhoto.addEventListener('mouseenter', function() {
-            scheduleHoverPlay();
-        });
-        livePhoto.addEventListener('mouseleave', function() {
-            stopVideo(false);
-        });
-
-        livePhoto.addEventListener('touchstart', function() {
-            scheduleHoverPlay();
-        }, { passive: true });
-        livePhoto.addEventListener('touchend', function() {
-            stopVideo(false);
-        }, { passive: true });
-        livePhoto.addEventListener('touchcancel', function() {
-            stopVideo(false);
-        }, { passive: true });
-
-        toggleBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            e.preventDefault();
-
-            isManuallyControlled = !isManuallyControlled;
-            toggleBtn.setAttribute('data-state', isManuallyControlled ? 'live' : 'static');
-
-            if (isManuallyControlled) {
-                playVideo({ unmute: false });
-            } else {
-                stopVideo(true);
-            }
-        });
-
-        muteBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            e.preventDefault();
-
-            var nextMuted = !getMuted();
-            setMuted(nextMuted);
-
-            if (!nextMuted && (isManuallyControlled || livePhoto.classList.contains('is-playing'))) {
-                playVideo({ unmute: true });
-            }
-        });
-
-        video.addEventListener('pause', function() {
-            if (!isManuallyControlled) {
-                livePhoto.classList.remove('is-playing');
-            }
-        });
-        video.addEventListener('ended', function() {
-            if (!isManuallyControlled) {
-                stopVideo(true);
-            }
-        });
     });
 }
 
 // ===== Live Photo Lightbox =====
+function openLivePhotoVideo(el) {
+    if (!el) return;
+    var videoUrl = el.getAttribute('data-video');
+    if (!videoUrl) return;
+    var lb = document.getElementById('live-photo-video-lightbox');
+    var video = document.getElementById('live-photo-lightbox-video');
+    if (!lb || !video) return;
+    video.src = videoUrl;
+    video.load();
+    var p = video.play();
+    if (p && p.catch) { p.catch(function(){}); }
+    lb.classList.add('on');
+    document.body.style.overflow = 'hidden';
+}
+function closeLivePhotoVideo(e) {
+    if (e && e.target !== e.currentTarget && !e.target.classList.contains('live-photo-lightbox-close')) return;
+    var lb = document.getElementById('live-photo-video-lightbox');
+    var video = document.getElementById('live-photo-lightbox-video');
+    if (!lb) return;
+    if (video) {
+        video.pause();
+        video.src = '';
+    }
+    lb.classList.remove('on');
+    document.body.style.overflow = '';
+}
+
+// 保留旧版图片 Lightbox（兼容旧博客内容）
 function openLivePhotoLightbox(e, btn) {
     if (btn) e.stopPropagation();
     var wrapper = e.currentTarget || e.target.closest('.live-photo');

@@ -1,56 +1,36 @@
 {{ $src := .Get "src" | default "" }}
 {{ $video := .Get "video" | default "" }}
 {{ $caption := .Get "caption" | default "" }}
-{{ $id := printf "live-card-%d" .Ordinal }}
 
-<div class="live-card" id="{{ $id }}" data-src="{{ $src }}" data-video="{{ $video }}">
-    {{/* 图片/视频容器 */}}
+<div class="live-card" data-video="{{ $video }}" onclick="openLivePhotoVideo(this)">
+    {{/* 图片容器 */}}
     <div class="live-card-container">
         {{/* 静态图片 */}}
         {{ if $src }}
         <img class="live-card-img" src="{{ $src }}" alt="{{ $caption }}" loading="lazy" data-keep="1">
         {{ end }}
 
-        {{/* 视频 */}}
-        {{ if $video }}
-        <video
-            class="live-card-video"
-            src="{{ $video }}"
-            loop
-            muted
-            playsinline
-            preload="none"
-        ></video>
-        {{ end }}
-
-        {{/* LIVE 标签 */}}
-        <div class="live-card-badge">
-            <span class="live-badge-dot"></span>
-            <span class="live-badge-text">LIVE</span>
-        </div>
-
-        {{/* 播放按钮 */}}
-        <button class="live-card-play-btn" aria-label="播放">
-            <i class="ri-play-fill"></i>
-        </button>
-
-        {{/* 控制栏 */}}
-        <div class="live-card-controls">
-            {{/* 音量控制 */}}
-            <button class="live-ctrl-btn live-card-volume" aria-label="音量">
-                <i class="ri-volume-up-line"></i>
-                <i class="ri-volume-mute-line" style="display:none"></i>
-            </button>
-
-            {{/* 循环控制 */}}
-            <button class="live-ctrl-btn live-card-loop" aria-label="循环" data-loop="true">
-                <i class="ri-repeat-2-line"></i>
-            </button>
-        </div>
-
-        {{/* 进度条 */}}
-        <div class="live-card-progress">
-            <div class="live-card-progress-bar"></div>
+        {{/* 实况角标 */}}
+        <div class="live-photo-badge">
+            <svg class="live-photo-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>
+                <circle cx="12" cy="12" r="5"/>
+                <path d="M15.9 20.11l0 .01"/>
+                <path d="M19.04 17.61l0 .01"/>
+                <path d="M20.77 14l0 .01"/>
+                <path d="M20.77 10l0 .01"/>
+                <path d="M19.04 6.39l0 .01"/>
+                <path d="M15.9 3.89l0 .01"/>
+                <path d="M12 3l0 .01"/>
+                <path d="M8.1 3.89l0 .01"/>
+                <path d="M4.96 6.39l0 .01"/>
+                <path d="M3.23 10l0 .01"/>
+                <path d="M3.23 14l0 .01"/>
+                <path d="M4.96 17.61l0 .01"/>
+                <path d="M8.1 20.11l0 .01"/>
+                <path d="M12 21l0 .01"/>
+            </svg>
+            <span>实况</span>
         </div>
     </div>
 
