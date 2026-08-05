@@ -381,34 +381,161 @@ async function momDelImg(i){
 }
 
 // 媒体库
+let momLibTab='all'; // all / r2 / github
 async function openMomLib(){
   I('mom-lib').classList.add('on');
   I('mom-lib-q').value='';
+  // 显示标签页
+  const tabs=I('mom-lib-tabs');
+  if(tabs)tabs.style.display='flex';
   if(!momLibImgs.length)await refreshMomLib();
   else filterMomLib();
 }
 
 function closeMomLib(){I('mom-lib').classList.remove('on')}
 
+function swMomLibTab(t){
+  momLibTab=t;
+  document.querySelectorAll('.mom-lib-tab-item').forEach(x=>x.classList.toggle('on',x.dataset.tab===t));
+  filterMomLib();
+}
+
 async function refreshMomLib(){
   const grid=I('mom-lib-grid');
   grid.innerHTML='<div style="grid-column:1/-1;padding:20px;text-align:center;color:var(--m)">加载中...</div>';
   momLibImgs=[];
-  try{
-    // 扫描公共图片目录
-    const files=await gh('/contents/static/posts/images');
-    momLibImgs=files.filter(f=>/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(f.name)).map(f=>({name:f.name,url:LOCAL?'/api/raw/static/posts/images/'+encodeURIComponent(f.name):CDN+'/static/posts/images/'+f.name,path:'static/posts/images/'+f.name}));
-    filterMomLib();
-  }catch(e){
-    grid.innerHTML='<div style="grid-column:1/-1;padding:20px;text-align:center;color:var(--m)">加载失败: '+e.message+'</div>';
+  
+  // 根据存储模式决定默认标签
+  const mode=getStorageMode();
+  if(!momLibImgs.length){
+    try{
+      // 加载 R2 图片
+      if(mode==='r2'||momLibTab==='all'||momLibTab==='r2'){
+        try{
+          const r=await fetch('/api/r2/list',{signal:AbortSignal.timeout(10000)});
+          const d=await r.json();
+          if(Array.isArray(d)){
+            const r2Imgs=d.map(x=>({
+              name:x.key.split('/').pop()||x.key,
+              key:x.key,
+              url:'/api/r2/img?key='+encodeURIComponent(x.key),
+              source:'r2',
+              path:x.key
+            }));
+            if(mode==='r2')momLibTab='r2';
+            momLibImgs.push(...r2Imgs);
+          }
+        }catch(e){
+          // R2 加载失败，忽略错误
+          console.warn('R2 images load failed:',e.message);
+        }
+      }
+      
+      // 加载 GitHub 图片
+      if(mode==='github'||momLibTab==='all'||momLibTab==='github'){
+        try{
+          // 扫描公共图片目录
+          const files=await gh('/contents/static/posts/images');
+          const githubImgs=files.filter(f=>/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(f.name)).map(f=>({
+            name:f.name,
+            url:LOCAL?'/api/raw/static/posts/images/'+encodeURIComponent(f.name):CDN+'/static/posts/images/'+f.name,
+            path:'static/posts/images/'+f.name,
+            source:'github'
+          }));
+          momLibImgs.push(...githubImgs);
+        }catch(e){
+          console.warn('GitHub static images load failed:',e.message);
+        }
+        
+        // 扫描所有动态目录下的图片
+        try{
+          const posts=await gh('/contents/'+PP);
+          for(const p of posts){
+            if(p.type!=='dir')continue;
+            try{
+              const fs=await gh('/contents/'+ghp(PP+'/'+p.name));
+              const postImgs=fs.filter(f=>/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(f.name)).map(f=>({
+                name:f.name,
+                url:LOCAL?'/api/raw/'+PP+'/'+p.name+'/'+encodeURIComponent(f.name):CDN+'/'+PP+'/'+p.name+'/'+f.name,
+                path:PP+'/'+p.name+'/'+f.name,
+                source:'github',
+                post:p.name
+              }));
+              momLibImgs.push(...postImgs);
+            }catch(_){}
+          }
+        }catch(e){
+          console.warn('GitHub post images load failed:',e.message);
+        }
+      }
+      
+      // 如果当前标签没有加载到任何图片，切换到对应标签
+      if(momLibTab!=='all'){
+        const hasCurrentTab=momLibImgs.some(x=>x.source===momLibTab);
+        if(!hasCurrentTab&&mode==='r2'){
+          momLibTab='r2';
+          document.querySelectorAll('.mom-lib-tab-item').forEach(x=>x.classList.toggle('on',x.dataset.tab==='r2'));
+        }else if(!hasCurrentTab&&mode==='github'){
+          momLibTab='github';
+          document.querySelectorAll('.mom-lib-tab-item').forEach(x=>x.classList.toggle('on',x.dataset.tab==='github'));
+        }
+      }
+      
+      filterMomLib();
+    }catch(e){
+      grid.innerHTML='<div style="grid-column:1/-1;padding:20px;text-align:center;color:var(--m)">加载失败: '+e.message+'</div>';
+    }
   }
 }
 
 function filterMomLib(){
   const q=(I('mom-lib-q').value||'').toLowerCase();
-  const fl=momLibImgs.filter(x=>x.name.toLowerCase().includes(q));
+  let fl=momLibImgs;
+  
+  // 根据当前标签过滤
+  if(momLibTab==='r2')fl=fl.filter(x=>x.source==='r2');
+  else if(momLibTab==='github')fl=fl.filter(x=>x.source==='github');
+  
+  // 搜索过滤
+  if(q)fl=fl.filter(x=>x.name.toLowerCase().includes(q));
+  
+  // 存储当前过滤后的列表供 pick 使用
+  momLibFiltered=fl;
+  
   const grid=I('mom-lib-grid');
-  grid.innerHTML=fl.length?fl.map(x=>'<div class="lib-item" onclick="pickLibImg(\''+x.name+'\')"><img src="'+x.url+'" alt="'+esc(x.name)+'" loading="lazy"><div class="nm">'+esc(x.name)+'</div></div>').join(''):'<div style="grid-column:1/-1;padding:20px;text-align:center;color:var(--m)">没有图片</div>';
+  const info=I('mom-lib-info');
+  if(info)info.textContent=fl.length+' 张图片';
+  
+  if(!fl.length){
+    grid.innerHTML='<div style="grid-column:1/-1;padding:30px 20px;text-align:center;color:var(--m)"><div style="font-size:36px;margin-bottom:8px">🖼️</div>'+
+      (momLibTab==='r2'?'R2 中暂无图片':momLibTab==='github'?'暂无 GitHub 图片':'没有找到图片')+'</div>';
+    return;
+  }
+  
+  grid.innerHTML=fl.map((x,i)=>{
+    const srcBadge=x.source==='r2'?'<span class="lib-badge r2">R2</span>':'<span class="lib-badge gh">Git</span>';
+    return '<div class="lib-item" onclick="pickLibByIndex('+i+')">'+
+      '<img src="'+x.url+'" alt="'+esc(x.name)+'" loading="lazy" onerror="this.outerHTML=\'<div class=\\'lib-error\\'>加载失败</div>\'">'+
+      srcBadge+
+      '<div class="nm">'+esc(x.name)+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+let momLibFiltered=[];
+
+function pickLibByIndex(i){
+  const x=momLibFiltered[i];
+  if(!x)return;
+  if(x.source==='r2'){
+    momImgs.push({name:x.name,url:x.url,kind:'r2'});
+  }else{
+    momImgs.push({name:x.name,url:x.url,path:x.path,kind:'lib'});
+  }
+  renderMomImgs();
+  closeMomLib();
+  T('已添加: '+x.name,'ok');
+  onText();
 }
 
 function pickLibImg(name){

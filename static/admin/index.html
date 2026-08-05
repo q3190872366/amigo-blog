@@ -60,6 +60,19 @@
     <div id="content">
       <!-- Dashboard -->
       <div class="view on" id="v-dashboard">
+        <!-- 快捷操作 - 放在最上面 -->
+        <div class="panel" style="margin-bottom:14px"><div class="panel-h">快捷操作</div>
+          <div class="panel-b">
+            <div class="qa-grid">
+              <a class="qa qa-primary" href="moments.html"><div class="qa-i">✏️</div><div class="qa-t">发布动态</div><div class="qa-d">分享这一刻的想法</div></a>
+              <a class="qa" href="posts.html"><div class="qa-i">📝</div><div class="qa-t">写文章</div><div class="qa-d">撰写新的博客文章</div></a>
+              <div class="qa" onclick="go('posts')"><div class="qa-i">📚</div><div class="qa-t">内容管理</div><div class="qa-d">管理文章和动态</div></div>
+              <a class="qa" href="images.html"><div class="qa-i">🖼️</div><div class="qa-t">媒体库</div><div class="qa-d">查看和上传图片</div></a>
+              <div class="qa" onclick="go('profile')"><div class="qa-i">👤</div><div class="qa-t">个人资料</div><div class="qa-d">修改头像、昵称</div></div>
+              <div class="qa" onclick="go('site')"><div class="qa-i">🌐</div><div class="qa-t">网站设置</div><div class="qa-d">配置站点信息</div></div>
+            </div>
+          </div>
+        </div>
         <div class="stats">
           <div class="stat"><div class="stat-i c1">💬</div><div class="stat-v" id="s-m">-</div><div class="stat-l">动态</div><span class="stat-p">↗ 0%</span></div>
           <div class="stat"><div class="stat-i c2">📝</div><div class="stat-v" id="s-p">-</div><div class="stat-l">文章</div><span class="stat-p">↗ 0%</span></div>
@@ -71,16 +84,6 @@
             <div class="panel-b"><div class="chart-box"><canvas id="c-bar"></canvas></div></div></div>
           <div class="panel"><div class="panel-h">内容分布<span class="more">详情</span></div>
             <div class="panel-b"><div class="chart-box"><canvas id="c-donut"></canvas></div></div></div>
-        </div>
-        <div class="panel"><div class="panel-h">快捷操作</div>
-          <div class="panel-b">
-            <div class="qa-grid">
-              <a class="qa qa-primary" href="moments.html"><div class="qa-i">✏️</div><div class="qa-t">发布动态</div><div class="qa-d">分享这一刻的想法</div></a>
-              <div class="qa" onclick="go('profile')"><div class="qa-i">👤</div><div class="qa-t">编辑个人资料</div><div class="qa-d">修改头像、昵称、签名</div></div>
-              <div class="qa" onclick="go('music')"><div class="qa-i">🎵</div><div class="qa-t">音乐管理</div><div class="qa-d">管理插件和背景音乐</div></div>
-              <div class="qa" onclick="go('site')"><div class="qa-i">🌐</div><div class="qa-t">网站设置</div><div class="qa-d">配置站点基本信息</div></div>
-            </div>
-          </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
           <div class="panel"><div class="panel-h">最近动态<span class="more" onclick="go('moments')">查看全部</span></div><div class="panel-b" id="r-m"><div class="empty">暂无</div></div></div>
