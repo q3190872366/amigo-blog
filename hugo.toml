@@ -29,7 +29,7 @@ uglyURLs = true
   username = "SL"
 
   # 头像地址（可以放本地路径比如 "/images/avatar.jpg"，也可以放网图链接）
-  avatar = "/images/avatar.jpg"
+  avatar = "/api/r2/img?key=f3992577dd429d8eda4fdeceee097a87.jpg"
 
   # 个人简介，会显示在头像旁边
   description = "记录生活朋友圈"
