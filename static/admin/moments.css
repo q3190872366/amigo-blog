@@ -117,14 +117,17 @@
 
 /* 手机端优化 */
 @media(max-width:480px){
-  .mom-lib-bd{max-height:90vh}
-  .mom-lib-grid{grid-template-columns:repeat(3,1fr);gap:6px;padding:8px}
-  .mom-lib-grid .lib-item{border-radius:6px}
-  .mom-lib-grid .lib-item .nm{font-size:9px;padding:10px 4px 4px}
+  .mom-lib-bd{max-height:92vh;min-height:70vh}
+  .mom-lib-grid{grid-template-columns:repeat(2,1fr);gap:8px;padding:10px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .mom-lib-grid .lib-item{border-radius:10px;aspect-ratio:4/3}
+  .mom-lib-grid .lib-item img{object-fit:cover}
+  .mom-lib-grid .lib-item .nm{font-size:11px;padding:14px 8px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .mom-lib-tabs{padding:8px 12px}
   .mom-lib-tab-item{padding:5px 12px;font-size:12px}
-  .mom-lib-h{padding:12px 14px}
-  .mom-lib-search{padding:8px 12px}
+  .mom-lib-h{padding:14px 16px}
+  .mom-lib-h > span{font-size:17px}
+  .mom-lib-search{padding:10px 14px}
+  .mom-lib-search input{font-size:15px;padding:10px 14px}
 }
 
 /* 桌面端 - 居中卡片 */

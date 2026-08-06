@@ -612,11 +612,12 @@ function filterMomLib(){
   
   grid.innerHTML=fl.map((x,i)=>{
     const srcBadge=x.source==='r2'?'<span class="lib-badge r2">R2</span>':'<span class="lib-badge gh">Git</span>';
-    const imgHtml='<img src="'+x.url+'" alt="'+esc(x.name)+'" loading="lazy">';
-    return '<div class="lib-item" onclick="pickLibByIndex('+i+')">'+
+    const shortName=x.name.length>20?x.name.slice(0,18)+'...'+(x.name.match(/\.[^.]+$/)?.[0]||''):x.name;
+    const imgHtml='<img src="'+x.url+'" alt="'+esc(x.name)+'" loading="lazy" onerror="this.onerror=null;this.outerHTML=\'<div class=\\'lib-error\\'>加载失败</div>\'">';
+    return '<div class="lib-item" onclick="pickLibByIndex('+i+')" title="'+esc(x.name)+'">'+
       imgHtml+
       srcBadge+
-      '<div class="nm">'+esc(x.name)+'</div>'+
+      '<div class="nm">'+esc(shortName)+'</div>'+
     '</div>';
   }).join('');
 }
