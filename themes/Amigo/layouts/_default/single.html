@@ -24,11 +24,8 @@
 
                 {{/* 正文内容 */}}
                 <div class="article-text moment-text">
-                    {{ $content := .Content }}
-                    {{ $content = $content | replaceRE "<img([^>]*data-keep=\"1\"[^>]*)>" "<keepimg$1>" }}
-                    {{ $content = $content | replaceRE "(?s)<img[^>]*>" "" }}
-                    {{ $content = $content | replaceRE "<keepimg([^>]*)>" "<img$1>" }}
-                    {{ $content | safeHTML }}
+                    {{/* 保留所有图片，交给 JS gallery 处理 */}}
+                    {{ .Content }}
                 </div>
 
                 {{/* 图片展示区 - 由 JS 动态填充 */}}
