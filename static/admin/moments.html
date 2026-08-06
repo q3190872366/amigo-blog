@@ -102,17 +102,21 @@
         <button onclick="closeMomLib()">✕</button>
       </div>
     </div>
-    <div class="mom-lib-tabs" id="mom-lib-tabs" style="display:none">
-      <div class="mom-lib-tab-item on" data-tab="all" onclick="swMomLibTab('all')">全部</div>
-      <div class="mom-lib-tab-item" data-tab="r2" onclick="swMomLibTab('r2')">☁️ R2</div>
-      <div class="mom-lib-tab-item" data-tab="github" onclick="swMomLibTab('github')">📁 GitHub</div>
-    </div>
-    <div class="mom-lib-search">
-      <input type="text" id="mom-lib-q" placeholder="搜索文件名..." oninput="filterMomLib()">
-      <button onclick="refreshMomLib()">↻</button>
-    </div>
-    <div class="mom-lib-grid" id="mom-lib-grid">
-      <div class="empty" style="grid-column:1/-1;padding:20px;text-align:center;color:var(--m)">加载中...</div>
+    <div class="mom-lib-scroll">
+      <div class="mom-lib-sticky">
+        <div class="mom-lib-tabs" id="mom-lib-tabs" style="display:none">
+          <div class="mom-lib-tab-item on" data-tab="all" onclick="swMomLibTab('all')">全部</div>
+          <div class="mom-lib-tab-item" data-tab="r2" onclick="swMomLibTab('r2')">☁️ R2</div>
+          <div class="mom-lib-tab-item" data-tab="github" onclick="swMomLibTab('github')">📁 GitHub</div>
+        </div>
+        <div class="mom-lib-search">
+          <input type="text" id="mom-lib-q" placeholder="搜索文件名..." oninput="filterMomLib()">
+          <button onclick="refreshMomLib()">↻</button>
+        </div>
+      </div>
+      <div class="mom-lib-grid" id="mom-lib-grid">
+        <div class="empty" style="grid-column:1/-1;padding:20px;text-align:center;color:var(--m)">加载中...</div>
+      </div>
     </div>
   </div>
 </div>
@@ -136,6 +140,6 @@
 <div id="toast"></div>
 
 <script src="admin-core.js?v=20260805"></script>
-<script src="moments.js?v=20260806-4"></script>
+<script src="moments.js?v=20260806-5"></script>
 </body>
 </html>
