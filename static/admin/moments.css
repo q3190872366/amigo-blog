@@ -111,6 +111,8 @@
 
 /* 加载失败占位 */
 .mom-lib-grid .lib-error{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f3f4f6;color:#9ca3af;font-size:11px}
+.mom-lib-grid .lib-img-error{opacity:0.3;background:#f3f4f6}
+.mom-lib-grid .lib-img-error::after{content:'加载失败';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:11px;color:#9ca3af}
 
 /* 空状态 */
 .mom-lib-grid .empty{grid-column:1/-1;padding:30px 20px;text-align:center;color:var(--m)}

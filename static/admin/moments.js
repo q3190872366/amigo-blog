@@ -434,7 +434,7 @@ async function momLiveUpload(files){
 function renderMomImgs(){
   const list=I('mom-img-list');
   // 重建 - 保留 add 按钮
-  list.innerHTML='<div class="mom-img-add" id="mom-img-add" onclick="document.getElementById(\'mom-img-file\').click()">'+
+  list.innerHTML='<div class="mom-img-add" id="mom-img-add">'+
     '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>'+
     '<div class="mom-img-hint" id="mom-img-hint">点击添加图片</div>';
   // 同步 hint
@@ -452,6 +452,7 @@ function renderMomImgs(){
   momImgs.forEach((img,i)=>{
     const d=document.createElement('div');
     d.className='mom-img-item'+(img.kind==='livephoto'?' live':'')+(img.kind==='r2-video'||img.kind==='new-video'?' video':'');
+    d.dataset.idx=i;
     let thumb=img.url;
     let badge='';
     if(img.kind==='livephoto'){
@@ -463,9 +464,19 @@ function renderMomImgs(){
     }
     d.innerHTML='<img src="'+(thumb||'')+'" alt="'+esc(img.name||'')+'" loading="lazy">'+
       badge+
-      '<button class="del" onclick="momDelImg('+i+')" aria-label="删除">✕</button>';
+      '<button class="del" aria-label="删除">✕</button>';
     list.appendChild(d);
   });
+  
+  // 使用事件委托处理删除按钮
+  list.onclick=function(e){
+    const delBtn=e.target.closest('.del');
+    const item=e.target.closest('.mom-img-item');
+    if(delBtn&&item){
+      const idx=parseInt(item.dataset.idx);
+      if(!isNaN(idx))momDelImg(idx);
+    }
+  };
 }
 
 // 删除图片
@@ -613,13 +624,30 @@ function filterMomLib(){
   grid.innerHTML=fl.map((x,i)=>{
     const srcBadge=x.source==='r2'?'<span class="lib-badge r2">R2</span>':'<span class="lib-badge gh">Git</span>';
     const shortName=x.name.length>20?x.name.slice(0,18)+'...'+(x.name.match(/\.[^.]+$/)?.[0]||''):x.name;
-    const imgHtml='<img src="'+x.url+'" alt="'+esc(x.name)+'" loading="lazy" onerror="this.onerror=null;this.outerHTML=\'<div class=\\'lib-error\\'>加载失败</div>\'">';
-    return '<div class="lib-item" onclick="pickLibByIndex('+i+')" title="'+esc(x.name)+'">'+
+    const imgHtml='<img src="'+x.url+'" alt="'+esc(x.name)+'" loading="lazy" data-idx="'+i+'" class="lib-img">';
+    return '<div class="lib-item" data-idx="'+i+'" title="'+esc(x.name)+'">'+
       imgHtml+
       srcBadge+
       '<div class="nm">'+esc(shortName)+'</div>'+
     '</div>';
   }).join('');
+  
+  // 使用事件委托处理点击和图片加载失败
+  grid.onclick=function(e){
+    const item=e.target.closest('.lib-item');
+    if(item){
+      const idx=parseInt(item.dataset.idx);
+      if(!isNaN(idx))pickLibByIndex(idx);
+    }
+  };
+  grid.onerror=null; // 清除可能的错误
+  // 使用事件委托处理图片加载失败
+  grid.addEventListener('error',function(e){
+    if(e.target.classList.contains('lib-img')){
+      e.target.classList.add('lib-img-error');
+      e.target.alt='加载失败';
+    }
+  },true);
 }
 
 function pickLibByIndex(i){
