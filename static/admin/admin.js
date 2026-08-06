@@ -11,8 +11,9 @@ function init(){
   if(s){try{const d=JSON.parse(s);P=d.pat||'';O=d.owner||'q3190872366';R=d.repo||'amigo-blog';B=d.branch||'master';PP=d.path||'content/posts';if(P)I('li-token').value=P;I('li-owner').value=O;I('li-repo').value=R}catch(_){}}
   // 自动登录：如果有认证信息，直接进入后台
   if(P){I('login').style.display='none';I('app').classList.add('open');loadDash()}
-  // 加载回收站
+  // 加载回收站并更新徽章
   loadRecycleBin();
+  updateRecycleCount();
 }
 init();
 
@@ -61,7 +62,7 @@ function go(v){
   document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('on'));
   document.querySelector('.nav-item[data-v="'+v+'"]')?.classList.add('on');
   cv=v;
-  I('bc').innerHTML={'dashboard':'仪表盘','posts':'仪表盘 / 文章管理','moments':'仪表盘 / 动态管理','media':'仪表盘 / 媒体库','editor':'仪表盘 / 编辑文章','profile':'仪表盘 / 个人资料','friends':'仪表盘 / 友链管理','music':'仪表盘 / 音乐管理','storage':'仪表盘 / 云端存储','site':'仪表盘 / 网站设置','ads':'仪表盘 / 内容管理 / 广告','comments':'仪表盘 / 内容管理 / 评论','douban':'仪表盘 / 内容管理 / 豆瓣影单','blacklist':'仪表盘 / 内容管理 / 黑名单','subscribe':'仪表盘 / 订阅友圈'}[v].split(' / ').map(s=>'<span>'+s+'</span>').join('');
+  I('bc').innerHTML={'dashboard':'仪表盘','posts':'仪表盘 / 文章管理','moments':'仪表盘 / 动态管理','media':'仪表盘 / 媒体库','editor':'仪表盘 / 编辑文章','profile':'仪表盘 / 个人资料','friends':'仪表盘 / 友链管理','music':'仪表盘 / 音乐管理','storage':'仪表盘 / 云端存储','site':'仪表盘 / 网站设置','ads':'仪表盘 / 内容管理 / 广告','comments':'仪表盘 / 内容管理 / 评论','douban':'仪表盘 / 内容管理 / 豆瓣影单','blacklist':'仪表盘 / 内容管理 / 黑名单','subscribe':'仪表盘 / 订阅友圈','recycle':'仪表盘 / 内容管理 / 回收站'}[v].split(' / ').map(s=>'<span>'+s+'</span>').join('');
   if(v==='posts'||v==='moments')loadPosts();
   if(v==='media')loadImgs();
   if(v==='dashboard')loadDash();
@@ -69,6 +70,7 @@ function go(v){
   if(v==='profile')loadProfile();
   if(v==='site')loadSite();
   if(v==='music')loadMusic();
+  if(v==='recycle')renderRecycleBin();
   if(window.innerWidth<768)I('sidebar').classList.remove('open');
 }
 
@@ -248,10 +250,19 @@ async function moveToRecycleBin(slugs){
   loadPosts();
 }
 function showRecycleBin(){
+  // 从侧边栏进入时，跳转到回收站页面
+  if(cv!=='recycle'){
+    go('recycle');
+    return;
+  }
+  renderRecycleBin();
+}
+// 渲染回收站到视图页面
+function renderRecycleBin(){
   loadRecycleBin();
-  const modal=I('recycle-modal');
   const list=I('recycle-list');
-  if(!modal)return;
+  const info=I('recycle-info');
+  if(!list)return;
   
   // 清理过期项
   const now=Date.now();
@@ -261,15 +272,19 @@ function showRecycleBin(){
     saveRecycleBin();
   }
   
+  // 更新徽章数量
+  updateRecycleCount();
+  
   if(!recycleBin.length){
-    list.innerHTML='<div class="empty">回收站为空</div>';
+    list.innerHTML='<div class="empty">回收站为空<br><small style="color:var(--m);font-size:12px">删除内容会移到此处，保留30天</small></div>';
+    if(info)info.style.display='block';
   }else{
     list.innerHTML=recycleBin.map((item,i)=>{
       const daysLeft=Math.ceil((item.expiresAt-now)/(24*60*60*1000));
       const deletedDate=new Date(item.deletedAt).toLocaleDateString('zh-CN');
       const isMom=item.type==='moment';
       return `<div class="pitem recycle-item">
-        <div>${isMom?'💬':'📝'} ${esc(item.title||item.slug)}</div>
+        <div class="recycle-title">${isMom?'💬':'📝'} ${esc(item.title||item.slug)}</div>
         <div class="meta">删除于 ${deletedDate} · ${daysLeft} 天后自动清除</div>
         <div class="p-actions">
           <button onclick="restoreFromBin(${i})">↩️ 恢复</button>
@@ -277,11 +292,34 @@ function showRecycleBin(){
         </div>
       </div>`;
     }).join('');
+    if(info)info.style.display='block';
   }
-  modal.classList.add('on');
+}
+// 更新回收站徽章数量
+function updateRecycleCount(){
+  loadRecycleBin();
+  const badge=I('recycle-count');
+  if(!badge)return;
+  
+  // 清理过期项
+  const now=Date.now();
+  const valid=recycleBin.filter(x=>x.expiresAt>now);
+  if(valid.length!==recycleBin.length){
+    recycleBin=valid;
+    saveRecycleBin();
+  }
+  
+  if(recycleBin.length>0){
+    badge.style.display='inline-block';
+    badge.textContent=recycleBin.length;
+  }else{
+    badge.style.display='none';
+  }
 }
 function closeRecycleBin(){
-  I('recycle-modal').classList.remove('on');
+  // 关闭模态框（保留兼容）
+  const modal=I('recycle-modal');
+  if(modal)modal.classList.remove('on');
 }
 async function restoreFromBin(index){
   loadRecycleBin();
@@ -305,7 +343,7 @@ async function restoreFromBin(index){
       saveRecycleBin();
       T('已恢复','ok');
       loadPosts();
-      showRecycleBin();
+      renderRecycleBin();
     }else{
       // 没有保存文件内容，尝试用原始数据重建
       const originalData=item.originalData;
@@ -326,7 +364,7 @@ async function restoreFromBin(index){
         saveRecycleBin();
         T('已恢复（部分内容丢失）','ok');
         loadPosts();
-        showRecycleBin();
+        renderRecycleBin();
       }else{
         T('无法恢复：未保存文件内容','err');
       }
@@ -341,7 +379,7 @@ function permanentDelete(index){
   recycleBin.splice(index,1);
   saveRecycleBin();
   T('已永久删除','ok');
-  showRecycleBin();
+  renderRecycleBin();
 }
 function emptyRecycleBin(){
   loadRecycleBin();
@@ -350,7 +388,7 @@ function emptyRecycleBin(){
   recycleBin=[];
   saveRecycleBin();
   T('回收站已清空','ok');
-  showRecycleBin();
+  renderRecycleBin();
 }
 
 // 预览文章（在新标签页打开）
